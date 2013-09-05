@@ -204,6 +204,9 @@ end
 
 function bagTouch(self,event)
 	if (event.phase == "began" and state ~= PICKEMDELAY) then
+	
+		local dinkSoundChannel = audio.play(dinkSound);
+		
 		bagsTouched = bagsTouched+1
 		if (prize == 1000) then
 			self:setFillColor(255,0,0)
@@ -397,6 +400,7 @@ end
 function bagHit()
 	points = points + 100
 	bagsHit = bagsHit + 1
+	local chingChannel = audio.play(chingSound)
 	updateMeters()
 
 end
@@ -481,6 +485,12 @@ startRoundTime = system.getTimer()
 initGraphics()
 --roundOver()
 --physics.start()
+backgroundMusic = audio.loadStream("garbage.mp3")
+backgroundMusicChannel = audio.play( backgroundMusic, { channel=1, loops=-1, fadein=5000 }  )  -- play the background music on channel 1, loop infinitely, and fadein over 5 seconds 
+
+chingSound = audio.loadStream("ching.mp3")
+dinkSound = audio.loadStream("dink.mp3")
+
 
 Runtime:addEventListener("touch", touchEventListener)
 Runtime:addEventListener("enterFrame", frameUpdate)
