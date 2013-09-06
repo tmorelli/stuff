@@ -227,7 +227,7 @@ function bagTouch(self,event)
 				self:setFillColor(0,0,255)
 			end
 		end
-		if (bagsTouched == 3) then
+		if (bagsTouched == 3 or bagsTouched >= bagsHit) then
 			points = points+prize
 			state=PICKEMDELAY
 			updateMeters()
