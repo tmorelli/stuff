@@ -9,6 +9,9 @@
 --local physics = require("physics")
 --physics.start()
 
+require("highScore")
+
+
 display.setStatusBar( display.HiddenStatusBar )
 truckHorizontalSpeed = 5
 speed = 5
@@ -33,6 +36,8 @@ startRoundTime = 0
 level = 1
 
 bagsHit = 0
+
+
 bagsHitImages = {}
 
 maxMisses = 5
@@ -301,6 +306,8 @@ function updateMeters()
 	if (timeLeft == 0 and state ~=PICKEMDELAY and state ~= GAME_OVER) then
 		roundOver()
 	end
+	highScore.update(points)
+	highScoreLabel.text = "Top: "..highScore.getScore()
 end
 -----------------------------------------------------------------
 function initMeters()
@@ -309,6 +316,13 @@ function initMeters()
 	pointLabel:setReferencePoint(display.BottomRightReferencePoint);
 	pointLabel.x = 300;
 	pointLabel.y = 40;
+
+
+	highScoreLabel = display.newText("Top: "..highScore.getScore(), 0,0, nil, 24);
+	highScoreLabel:setReferencePoint(display.BottomRightReferencePoint);
+	highScoreLabel.x = 300;
+	highScoreLabel.y = 80;
+
 
 	timeLabel = display.newText("Time: "..points, 0,0, nil, 24);
 	timeLabel:setReferencePoint(display.BottomLeftReferencePoint);
@@ -482,6 +496,7 @@ end
 
 -----------------------------------------------------------------
 startRoundTime = system.getTimer()
+highScore.init()
 initGraphics()
 --roundOver()
 --physics.start()
