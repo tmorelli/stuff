@@ -13,7 +13,15 @@ settings = {
 			UIStatusBarHidden = false,
 			UIPrerenderedIcon = true, -- set to false for "shine" overlay
 			--UIApplicationExitsOnSuspend = true, -- uncomment to quit app on suspend
-
+			CFBundleIconFiles = {
+            "Icon.png",
+            "Icon@2x.png",
+            "Icon-60@2x.png",
+            "Icon-72.png",
+            "Icon-72@2x.png",
+            "Icon-76.png",
+            "Icon-76@2x.png",
+	         },
             --[[
             -- iOS app URL schemes:
             CFBundleURLTypes =
