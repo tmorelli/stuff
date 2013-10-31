@@ -6,11 +6,10 @@
 
 -- Your code here
 
---local physics = require("physics")
---physics.start()
+
 
 require("highScore")
-
+json = require("json")
 
 display.setStatusBar( display.HiddenStatusBar )
 truckHorizontalSpeed = 5
@@ -37,6 +36,11 @@ level = 1
 
 bagsHit = 0
 
+correctColor = 0
+incorrectColor = 0
+
+colors = {{255,0,0},{0,255,0},{0,0,255}}
+
 
 bagsHitImages = {}
 
@@ -52,6 +56,8 @@ GAME_OVER = 2
 PICKEM_DELAY = 3
 
 state = PLAYING
+
+saveState = {}
 
 
 -----------------------------------------------------------------
@@ -71,11 +77,27 @@ function restartGame()
 	startNextLevel()
 	
 end
+
+-----------------------------------------------------------------
+function highScoresDone()
+	restartGame()
+end
+-----------------------------------------------------------------
+function showHighScores()
+	highScore.showHighScores(highScoresDone)	
+end
 -----------------------------------------------------------------
 function touchEventListener(event )
 
+	if (splashShown == true) then
+		exitSplash()
+		return
+	end
+
+
 	if (state == GAME_OVER and event.phase == "began") then
-		restartGame()
+		showHighScores()
+--		restartGame()
 		return
 	end
 	if (event.phase == "began" or  event.phase == "moved") then
@@ -129,12 +151,12 @@ function initHouses()
 end
 -----------------------------------------------------------------
 function initMissedBags()
-	for x = 0,maxMisses do
+	for x = 0,maxMisses-1 do
 		missedBags[x] = display.newImage("bag.png")
 		missedBags[x].y = 450
 		missedBags[x].x = 10+20*x
-		missedBags[x]:setFillColor(255,0,0)
-		missedBags[x].alpha = 0.0
+		missedBags[x]:setFillColor(128,128,128)
+		missedBags[x].alpha = .6
 	end
 end
 -----------------------------------------------------------------
@@ -143,16 +165,12 @@ function initBags()
 		rightBags[x] = display.newImage("bag.png")
 		rightBags[x].y = -100
 		rightBags[x].x = 262
---		physics.addBody(rightBags[x], "static", {density = 0, friction=0, bounce=0,isSensor=true})
 		rightBags[x].name = "bag"
-
---		rightBags[x]:setFillColor(255,0,0)
 	end
 	for x = 0,numBags do
 		leftBags[x] = display.newImage("bag.png")
 		leftBags[x].y = -100
 		leftBags[x].x = 56
---		physics.addBody(leftBags[x], "static", {density = 0, friction=0, bounce=0,isSensor=true})
 		leftBags[x].name = "bag"
 	end
 end
@@ -161,15 +179,16 @@ function startNextLevel()
 	level = level + 1
 	levelLabel.text = "Level: "..level
 	bagsHit = 0
-	for x = 0,maxMisses do
-		missedBags[x].alpha=0.0
+	for x = 0,maxMisses-1 do
+		missedBags[x]:setFillColor(128,128,128)
+		missedBags[x].alpha = .6
 	end
 	totalMisses = 0
 
 	timeForRandomHouse = 100
 	framesSinceLastRandomRightHouse = timeForRandomHouse
 	framesSinceLastRandomLeftHouse = timeForRandomHouse
-	speed = 3+2*level
+	speed = 3+1.5*level
 	currentLevelSpeed = speed
 	movingRight = false
 	movingLeft = false
@@ -190,9 +209,40 @@ function startNextLevel()
 	startRoundTime = system.getTimer()
 end
 -----------------------------------------------------------------
+function scalePickemPrize()
+	if (pickemPrize.xScale >= 1.5) then
+		scaleDirection = -1
+	elseif (pickemPrize.xScale <= .5) then
+		scaleDirection = 1
+	end
+	pickemPrize.xScale = pickemPrize.xScale + 0.1*scaleDirection
+	pickemPrize.yScale = pickemPrize.yScale + 0.1*scaleDirection
+	pickemPrizeTimer = timer.performWithDelay(16,scalePickemPrize)
+
+
+end
+-----------------------------------------------------------------
+function exitPickem()
+	audio.play(pooperSound)
+	audio.play(pickemExitSound)
+
+	scaleDirection = 1
+	pickemPrize = display.newText(prize,110,200,nil,36)
+	pickemPrizeTimer = timer.performWithDelay(16,scalePickemPrize)
+	timer.performWithDelay(3000,pickemOver)
+
+
+--	pickemOver()
+end
+-----------------------------------------------------------------
 function pickemOver()
+	timer.cancel(pickemPrizeTimer)
+
 	roundOverText:removeSelf()
 	roundOverText = nil
+	
+	pickemPrize:removeSelf()
+	pickemPrize = nil
 	
 	roundOverInstruction:removeSelf()
 	roundOverInstruction = nil
@@ -203,16 +253,47 @@ function pickemOver()
 		bagsHitImages[x]:removeSelf()
 		bagsHitImages[x] = nil
 	end
+	
 	startNextLevel()
 end
 -----------------------------------------------------------------
 
 function bagTouch(self,event)
+
+--[[
+		prize = 1000 * prize
+		correctColor = {255,0,0}
+--]]
+
 	if (event.phase == "began" and state ~= PICKEMDELAY) then
 	
 		local dinkSoundChannel = audio.play(dinkSound);
-		
+		thisRoundOver = false
 		bagsTouched = bagsTouched+1
+		
+		print("bagTouch"..bagsTouched..","..bagsHit..","..correctColor..","..incorrectColor)
+		
+		if (bagsTouched <= prize/1000) then
+			self:setFillColor(colors[correctColor][1],colors[correctColor][2],colors[correctColor][3])
+--			self:fillColor(255,0,0)
+		else
+			self:setFillColor(colors[incorrectColor][1],colors[incorrectColor][2],colors[incorrectColor][3])
+--			self:fillColor(0,0,255)
+		end	
+		if ((bagsTouched == prize/1000 + 1) or (bagsTouched == bagsHit)) then
+			thisRoundOver = true
+		end
+		
+
+		if (thisRoundOver == true) then
+			points = points+prize
+			state=PICKEMDELAY
+			updateMeters()
+			exitPickem()
+--			timer.performWithDelay(3000,pickemOver)
+		end
+
+--[[	
 		if (prize == 1000) then
 			self:setFillColor(255,0,0)
 		elseif (prize == 2000) then
@@ -238,7 +319,133 @@ function bagTouch(self,event)
 			updateMeters()
 			timer.performWithDelay(1000,pickemOver)
 		end
+--]]
 	end
+end
+-----------------------------------------------------------------
+function choosePrize(_bags)
+		if (bagsHit == 0) then
+			return 0
+		end		
+		local picks = 0
+		local rnd = math.random(0,100)
+		if (bagsHit == 1) then
+			picks = 0
+		end		
+		if (bagsHit == 2) then
+			if (rnd < 50) then
+				picks = 0
+			else
+				picks = 1
+			end
+		end				
+		if (bagsHit == 3) then
+			if (rnd < 50) then
+				picks = 0
+			elseif (rnd < 75) then
+				picks = 1
+			else
+				picks = 2
+			end
+		end		
+		if (bagsHit == 4) then
+			if (rnd < 30) then
+				picks = 0
+			elseif (rnd < 50) then
+				picks = 1
+			elseif (rnd < 90) then
+				picks = 2
+			else
+				picks = 3
+			end
+		end		
+		if (bagsHit == 5) then
+			if (rnd < 20) then
+				picks = 0
+			elseif (rnd < 40) then
+				picks = 1
+			elseif (rnd < 60) then
+				picks = 2
+			elseif (rnd < 90) then
+				picks = 3
+			else
+				picks = 4
+			end
+		end		
+		if (bagsHit == 6) then
+			if (rnd < 20) then
+				picks = 0
+			elseif (rnd < 30) then
+				picks = 1
+			elseif (rnd < 50) then
+				picks = 2
+			elseif (rnd < 70) then
+				picks = 3
+			elseif (rnd < 90) then
+				picks = 4
+			else
+				picks = 5
+			end
+		end		
+		if (bagsHit == 7) then
+			if (rnd < 20) then
+				picks = 0
+			elseif (rnd < 30) then
+				picks = 1
+			elseif (rnd < 40) then
+				picks = 2
+			elseif (rnd < 60) then
+				picks = 3
+			elseif (rnd < 70) then
+				picks = 4
+			elseif (rnd < 90) then
+				picks = 5
+			else
+				picks = 6
+			end
+		end		
+		if (bagsHit == 8) then
+			if (rnd < 10) then
+				picks = 0
+			elseif (rnd < 20) then
+				picks = 1
+			elseif (rnd < 30) then
+				picks = 2
+			elseif (rnd < 40) then
+				picks = 3
+			elseif (rnd < 60) then
+				picks = 4
+			elseif (rnd < 70) then
+				picks = 5
+			elseif (rnd < 90) then
+				picks = 6
+			else
+				picks = 7
+			end
+		end		
+		if (bagsHit >= 9) then
+			if (rnd < 10) then
+				picks = 0
+			elseif (rnd < 20) then
+				picks = 1
+			elseif (rnd < 30) then
+				picks = 2
+			elseif (rnd < 40) then
+				picks = 3
+			elseif (rnd < 60) then
+				picks = 4
+			elseif (rnd < 70) then
+				picks = 5
+			elseif (rnd < 80) then
+				picks = 6
+			elseif (rnd < 90) then
+				picks = 7
+			else
+				picks = 8
+			end
+		end		
+		picks = picks+1
+		return picks*1000
 end
 -----------------------------------------------------------------
 function roundOver()
@@ -250,12 +457,12 @@ function roundOver()
 	roundOverText.x = 90;
 	roundOverText.y = 80;
 		
-	roundOverInstruction = display.newText("Touch 3 Bags To Reveal Color", 0,0, nil, 18);
+	roundOverInstruction = display.newText("Touch Bags To Reveal Color!", 0,0, nil, 18);
 	roundOverInstruction:setReferencePoint(display.TopLeftReferencePoint);
 	roundOverInstruction.x = 40;
 	roundOverInstruction.y = 120;
 
-	roundOverInstruction2 = display.newText("Match 3 Colors and Win!", 0,0, nil, 18);
+	roundOverInstruction2 = display.newText("Pick Until Color Changes", 0,0, nil, 18);
 	roundOverInstruction2:setReferencePoint(display.TopLeftReferencePoint);
 	roundOverInstruction2.x = 55;
 	roundOverInstruction2.y = 140;
@@ -263,14 +470,20 @@ function roundOver()
 	rowIndex = 0
 	yLocation = 180	
 	
-	prize = math.random(0,3)
-	prize = 1000 * prize
-	if (bagsHit < 3) then
+	if (bagsHit == 0) then
 		prize = 0
+	else
+		prize = choosePrize(bagsHit)
+	end
+	
+	correctColor = math.random(1,#colors)
+	incorrectColor = math.random(1,#colors)
+	while (incorrectColor == correctColor) do
+		incorrectColor = math.random(1,#colors)
 	end
 	
 	
-	
+
 	for x = 0,bagsHit-1 do
 		bagsHitImages[x] = display.newImage("bag.png")
 		bagsHitImages[x].x = 100 + 30*rowIndex
@@ -297,7 +510,17 @@ function gameOver()
 end
 -----------------------------------------------------------------
 function updateMeters()
-	pointLabel.text = "Points: "..points
+
+	if (pointLabel ~= nil) then
+		pointLabel:removeSelf()
+		pointLabel = nil
+	end
+	pointLabel = display.newText("Points: "..points, 0,0, nil, 24);
+	pointLabel:setReferencePoint(display.BottomRightReferencePoint);
+	pointLabel.x = 320;
+	pointLabel.y = 40;
+
+
 	if (state == PLAYING) then
 		timeLeft = roundTime - math.round((system.getTimer()-startRoundTime)/1000)
 	end
@@ -307,22 +530,29 @@ function updateMeters()
 		roundOver()
 	end
 	highScore.update(points)
-	highScoreLabel.text = "Top: "..highScore.getScore()
+	
+	if (highScoreLabel ~= nil) then
+		highScoreLabel:removeSelf()
+		highScoreLabel = nil
+	end
+	highScoreLabel = display.newText("Top: "..highScore.getScore(), 0,0, nil, 24);
+	highScoreLabel:setReferencePoint(display.BottomRightReferencePoint);
+	highScoreLabel.x = 320;
+	highScoreLabel.y = 80;
+
 end
 -----------------------------------------------------------------
 function initMeters()
 	meterPanel = display.newImage("meter.png")
 	pointLabel = display.newText("Points: "..points, 0,0, nil, 24);
 	pointLabel:setReferencePoint(display.BottomRightReferencePoint);
-	pointLabel.x = 300;
+	pointLabel.x = 320;
 	pointLabel.y = 40;
-
 
 	highScoreLabel = display.newText("Top: "..highScore.getScore(), 0,0, nil, 24);
 	highScoreLabel:setReferencePoint(display.BottomRightReferencePoint);
-	highScoreLabel.x = 300;
+	highScoreLabel.x = 320;
 	highScoreLabel.y = 80;
-
 
 	timeLabel = display.newText("Time: "..points, 0,0, nil, 24);
 	timeLabel:setReferencePoint(display.BottomLeftReferencePoint);
@@ -346,7 +576,6 @@ function initGraphics()
 	truck.x = 160
 	truck.y = 400
 	truck.name = "truck"
---	physics.addBody(truck, "static", {density = 1.6, friction=0.5, bounce=0.2,isSensor=true})
 	initMeters()
 end
 
@@ -412,22 +641,25 @@ function placeNextLeftHouse()
 end
 -----------------------------------------------------------------
 function bagHit()
-	points = points + 100
+	points = points + 100 * level
 	bagsHit = bagsHit + 1
 	local chingChannel = audio.play(chingSound)
 	updateMeters()
+	updateSaveState()
 
 end
 -----------------------------------------------------------------
 function bagMissed()
 	if (totalMisses < maxMisses) then
 		missedBags[totalMisses].alpha = 1.0
+		missedBags[totalMisses]:setFillColor(255,0,0) 
 		totalMisses = totalMisses+1
 	end
 	if (totalMisses >= maxMisses) then
 		gameOver()
 	end
 	updateMeters()
+	updateSaveState()
 end
 -----------------------------------------------------------------
 function checkCollisions()
@@ -493,20 +725,130 @@ function onCollision(event)
 	end
 
 end
+-----------------------------------------------------------------
+function updateSaveState()
+	saveState.level = level
+	saveState.totalMisses = totalMisses
+	saveState.bagsHit = bagsHit
+	saveState.timeLeft = roundTime - math.round((system.getTimer()-startRoundTime)/1000)
+	saveState.points = points
+	
+	local path = system.pathForFile( "saveState.json", system.DocumentsDirectory )
+	local file = io.open( path, "w" )
+	local ss = json.encode(saveState)
+    file:write( ss )
+    io.close( file )
+    file = nil
+    ss = nil
+end
 
 -----------------------------------------------------------------
-startRoundTime = system.getTimer()
+function showSplash()
+	splashShown = true
+	splashText = display.newText("Touch Left and Right To Move", 0,0, nil, 18);
+	splashText:setReferencePoint(display.TopLeftReferencePoint);
+	splashText.x = 30;
+	splashText.y = 80;
+		
+	splashText2 = display.newText("Collect Bags For Points", 0,0, nil, 18);
+	splashText2:setReferencePoint(display.TopLeftReferencePoint);
+	splashText2.x = 58;
+	splashText2.y = 120;
+
+	splashText3 = display.newText("Extra Bonus After Each Level!", 0,0, nil, 18);
+	splashText3:setReferencePoint(display.TopLeftReferencePoint);
+	splashText3.x = 30;
+	splashText3.y = 140;
+
+end
+
+-----------------------------------------------------------------
+function exitSplash()
+	splashShown = false
+	if (splashText ~= nil) then
+		splashText:removeSelf()
+		splashText = nil
+	end
+	if (splashText2 ~= nil) then
+		splashText2:removeSelf()
+		splashText2 = nil
+	end
+	if (splashText3 ~= nil) then
+		splashText3:removeSelf()
+		splashText3 = nil
+	end
+	timer.performWithDelay(500,startGame)
+end
+-----------------------------------------------------------------
+function startGame()
+	startRoundTime = system.getTimer()
+	Runtime:addEventListener("enterFrame", frameUpdate)
+end
+-----------------------------------------------------------------
+function restoreState()
+
+--[[
+    local path = system.pathForFile( "saveState.json", system.DocumentsDirectory )
+    local file = io.open( path, "r" )
+    if (file ~= nil) then
+	    local ss = file:read( "*a" )
+   	 	saveState = json.decode(ss)
+   	 	io.close( file )
+    	file = nil
+    	level = saveState.level-1
+		bagsHit = saveState.bagsHit
+		totalMisses = saveState.totalMisses
+		points = saveState.points
+		startNextLevel()
+
+		for x = 0,saveState.totalMisses-1 do
+			missedBags[x].alpha=1.0
+		end
+		bagsHit = saveState.bagsHit
+		totalMisses = saveState.totalMisses
+		startRoundTime = system.getTimer() - (roundTime-saveState.timeLeft) * 1000
+	else
+		startRoundTime = system.getTimer()
+    end
+--]]
+
+	showSplash(startGame)
+
+end
+
+--[[
+-----------------------------------------------------------------
+local function onGameNetworkRequestResult( event )
+    if event.type == "setHighScore" then
+        -- High score has been set.
+    elseif event.type == "resetAchievements" then
+        -- Achievements have been reset.
+    end
+end
+-----------------------------------------------------------------
+
+function updateHighScore()
+        gameNetwork.request( "setHighScore",
+        {
+            localPlayerScore = { category="GarbageCollection.01", value=points },
+            listener=requestCallback
+        })
+        -- gameNetwork.show( "leaderboards", { leaderboard = {playerScope="Global",timeScope="AllTime"}, listener=onGameNetworkPopupDismissed } )
+end
+--]]
+
+
 highScore.init()
 initGraphics()
---roundOver()
---physics.start()
 backgroundMusic = audio.loadStream("garbage.mp3")
 backgroundMusicChannel = audio.play( backgroundMusic, { channel=1, loops=-1, fadein=5000 }  )  -- play the background music on channel 1, loop infinitely, and fadein over 5 seconds 
 
+
+pooperSound = audio.loadStream("pooper.mp3")
+pickemExitSound = audio.loadStream("pickemexit.mp3")
+
 chingSound = audio.loadStream("ching.mp3")
 dinkSound = audio.loadStream("dink.mp3")
-
-
 Runtime:addEventListener("touch", touchEventListener)
-Runtime:addEventListener("enterFrame", frameUpdate)
---Runtime:addEventListener("collision", onCollision)
+
+restoreState()
