@@ -230,7 +230,6 @@ function exitPickem()
 	pickemPrize = display.newText(prize,110,200,nil,36)
 	pickemPrizeTimer = timer.performWithDelay(16,scalePickemPrize)
 	timer.performWithDelay(3000,pickemOver)
-
 --	pickemOver()
 end
 -----------------------------------------------------------------
