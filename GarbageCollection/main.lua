@@ -66,16 +66,6 @@ state = PLAYING
 saveState = {}
 
 
-
-local function onKeyEvent( event )
-
-	if (splashShown == true) then
-		exitSplash()
-		return
-	end
-
-end
-
 local function onAxisEvent( event )
 
 	if (splashShown == true) then
@@ -83,7 +73,17 @@ local function onAxisEvent( event )
 		return
 	end
 	
+	if (state == GAME_OVER) then
+		--showHighScores()
+		restartGame()
+		return
+	end
+	
 	local valAxis = event.normalizedValue;
+	
+	if (math.abs(valAxis) < 0.3) then
+		valAxis = 0;
+	end
 	
 	if (event.axis.number == 1) then
 		if (valAxis > 0) then
