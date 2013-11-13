@@ -82,7 +82,22 @@ local function onAxisEvent( event )
 		exitSplash()
 		return
 	end
-
+	
+	local valAxis = event.normalizedValue;
+	
+	if (event.axis.number == 1) then
+		if (valAxis > 0) then
+			movingRight = true
+			movingLeft = false
+		elseif (valAxis < 0) then
+			movingRight = false
+			movingLeft = true
+		else 
+			movingRight = false
+			movingLeft = false
+		end
+	end
+	
 end
 
 -----------------------------------------------------------------
@@ -122,7 +137,7 @@ function touchEventListener(event )
 
 	if (state == GAME_OVER and event.phase == "began") then
 		--showHighScores()
---		restartGame()
+		restartGame()
 		return
 	end
 	if (event.phase == "began" or  event.phase == "moved") then
