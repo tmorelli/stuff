@@ -8,7 +8,7 @@
 
 
 
-require("highScore")
+-- require("highScore")
 json = require("json")
 
 display.setStatusBar( display.HiddenStatusBar )
@@ -60,6 +60,15 @@ state = PLAYING
 saveState = {}
 
 
+
+local function onKeyEvent( event )
+
+end
+
+local function onAxisEvent( event )
+
+end
+
 -----------------------------------------------------------------
 function adjustTruckBounds()
 	if (truck.x < 60) then
@@ -79,13 +88,13 @@ function restartGame()
 end
 
 -----------------------------------------------------------------
-function highScoresDone()
+--[[function highScoresDone()
 	restartGame()
 end
 -----------------------------------------------------------------
 function showHighScores()
 	highScore.showHighScores(highScoresDone)	
-end
+end]]--
 -----------------------------------------------------------------
 function touchEventListener(event )
 
@@ -96,7 +105,7 @@ function touchEventListener(event )
 
 
 	if (state == GAME_OVER and event.phase == "began") then
-		showHighScores()
+		--showHighScores()
 --		restartGame()
 		return
 	end
@@ -230,6 +239,7 @@ function exitPickem()
 	pickemPrize = display.newText(prize,110,200,nil,36)
 	pickemPrizeTimer = timer.performWithDelay(16,scalePickemPrize)
 	timer.performWithDelay(3000,pickemOver)
+
 --	pickemOver()
 end
 -----------------------------------------------------------------
@@ -527,7 +537,7 @@ function updateMeters()
 	if (timeLeft == 0 and state ~=PICKEMDELAY and state ~= GAME_OVER) then
 		roundOver()
 	end
-	highScore.update(points)
+	--[[highScore.update(points)
 	
 	if (highScoreLabel ~= nil) then
 		highScoreLabel:removeSelf()
@@ -537,6 +547,7 @@ function updateMeters()
 	highScoreLabel:setReferencePoint(display.BottomRightReferencePoint);
 	highScoreLabel.x = 320;
 	highScoreLabel.y = 80;
+	]]--
 
 end
 -----------------------------------------------------------------
@@ -547,10 +558,11 @@ function initMeters()
 	pointLabel.x = 320;
 	pointLabel.y = 40;
 
-	highScoreLabel = display.newText("Top: "..highScore.getScore(), 0,0, nil, 24);
+	--[[highScoreLabel = display.newText("Top: "..highScore.getScore(), 0,0, nil, 24);
 	highScoreLabel:setReferencePoint(display.BottomRightReferencePoint);
 	highScoreLabel.x = 320;
 	highScoreLabel.y = 80;
+	]]--
 
 	timeLabel = display.newText("Time: "..points, 0,0, nil, 24);
 	timeLabel:setReferencePoint(display.BottomLeftReferencePoint);
@@ -836,7 +848,7 @@ end
 --]]
 
 
-highScore.init()
+--highScore.init()
 initGraphics()
 backgroundMusic = audio.loadStream("garbage.mp3")
 backgroundMusicChannel = audio.play( backgroundMusic, { channel=1, loops=-1, fadein=5000 }  )  -- play the background music on channel 1, loop infinitely, and fadein over 5 seconds 
@@ -848,5 +860,7 @@ pickemExitSound = audio.loadStream("pickemexit.mp3")
 chingSound = audio.loadStream("ching.mp3")
 dinkSound = audio.loadStream("dink.mp3")
 Runtime:addEventListener("touch", touchEventListener)
+Runtime:addEventListener( "axis", onAxisEvent )
+Runtime:addEventListener( "key", onKeyEvent )
 
 restoreState()
