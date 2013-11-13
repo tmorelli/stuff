@@ -69,9 +69,19 @@ saveState = {}
 
 local function onKeyEvent( event )
 
+	if (splashShown == true) then
+		exitSplash()
+		return
+	end
+
 end
 
 local function onAxisEvent( event )
+
+	if (splashShown == true) then
+		exitSplash()
+		return
+	end
 
 end
 
