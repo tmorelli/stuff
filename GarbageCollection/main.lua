@@ -34,7 +34,13 @@ roundTime = 30.0
 startRoundTime = 0
 level = 1
 
+
+leftBorder = 86
+rightBorder = 390
+
 bagsHit = 0
+
+truckY = 600
 
 correctColor = 0
 incorrectColor = 0
@@ -71,10 +77,10 @@ end
 
 -----------------------------------------------------------------
 function adjustTruckBounds()
-	if (truck.x < 60) then
-		truck.x = 60
-	elseif (truck.x > 260) then
-		truck.x = 260
+	if (truck.x < 86) then
+		truck.x = 86
+	elseif (truck.x > 390) then
+		truck.x = 390
 	end
 end
 -----------------------------------------------------------------
@@ -134,7 +140,7 @@ end
 -----------------------------------------------------------------
 function initLaneMarkerLocations()
 	for x = 0, numLaneMarkers do
-		laneMarkers[x].x = 160
+		laneMarkers[x].x = (rightBorder-leftBorder) / 2 + leftBorder
 		laneMarkers[x].y = 60*x
 	end
 end
@@ -150,19 +156,19 @@ function initHouses()
 	for x = 0,numHouses do
 		rightHouses[x] = display.newImage("HouseRight.png")
 		rightHouses[x].y = -100
-		rightHouses[x].x = 285
+		rightHouses[x].x = rightBorder+35
 	end
 	for x = 0,numHouses do
 		leftHouses[x] = display.newImage("HouseLeft.png")
 		leftHouses[x].y = -100
-		leftHouses[x].x = 35
+		leftHouses[x].x = leftBorder-35
 	end
 end
 -----------------------------------------------------------------
 function initMissedBags()
 	for x = 0,maxMisses-1 do
 		missedBags[x] = display.newImage("bag.png")
-		missedBags[x].y = 450
+		missedBags[x].y = truckY+50
 		missedBags[x].x = 10+20*x
 		missedBags[x]:setFillColor(128,128,128)
 		missedBags[x].alpha = .6
@@ -173,13 +179,13 @@ function initBags()
 	for x = 0,numBags do
 		rightBags[x] = display.newImage("bag.png")
 		rightBags[x].y = -100
-		rightBags[x].x = 262
+		rightBags[x].x = rightBorder
 		rightBags[x].name = "bag"
 	end
 	for x = 0,numBags do
 		leftBags[x] = display.newImage("bag.png")
 		leftBags[x].y = -100
-		leftBags[x].x = 56
+		leftBags[x].x = leftBorder
 		leftBags[x].name = "bag"
 	end
 end
@@ -571,20 +577,20 @@ function initMeters()
 
 	levelLabel = display.newText("Level: "..level, 0,0, nil, 18);
 	levelLabel:setReferencePoint(display.BottomRightReferencePoint);
-	levelLabel.x = 300;
-	levelLabel.y = 470;
+	levelLabel.x = 480;
+	levelLabel.y = truckY+50;
 
 end
 -----------------------------------------------------------------
 function initGraphics()
-	background = display.newImage("background.png")
+	background = display.newImage("background.png",0,0)
 	initLaneMarkers()
 	initHouses()
 	initBags()
 	initMissedBags()
 	truck = display.newImage("truck.png")
 	truck.x = 160
-	truck.y = 400
+	truck.y = truckY
 	truck.name = "truck"
 	initMeters()
 end
@@ -595,7 +601,7 @@ function updateHouses()
 		if (rightHouses[x].y >= 0) then
 			rightHouses[x].y = rightHouses[x].y + speed
 		end
-		if (rightHouses[x].y > 500) then
+		if (rightHouses[x].y > 720) then
 			rightHouses[x].y = -100
 		end
 	end
@@ -603,7 +609,7 @@ function updateHouses()
 		if (leftHouses[x].y >= 0) then
 			leftHouses[x].y = leftHouses[x].y + speed
 		end
-		if (leftHouses[x].y > 500) then
+		if (leftHouses[x].y > 720) then
 			leftHouses[x].y = -100
 		end
 	end
@@ -614,7 +620,7 @@ function updateBags()
 		if (rightBags[x].y >= 0) then
 			rightBags[x].y = rightBags[x].y + speed
 		end
-		if (rightBags[x].y > 500) then
+		if (rightBags[x].y > 720) then
 			rightBags[x].y = -100
 			bagMissed()
 		end
@@ -623,7 +629,7 @@ function updateBags()
 		if (leftBags[x].y >= 0) then
 			leftBags[x].y = leftBags[x].y + speed
 		end
-		if (leftBags[x].y > 500) then
+		if (leftBags[x].y > 720) then
 			leftBags[x].y = -100
 			bagMissed()
 		end
@@ -673,16 +679,16 @@ function bagMissed()
 end
 -----------------------------------------------------------------
 function checkCollisions()
-	if (truck.x < 80 ) then
+	if (truck.x < leftBorder+10 ) then
 		for x = 0,numBags do
-			if (leftBags[x].y >= 390 and leftBags[x].y <= 430) then
+			if (leftBags[x].y >= truckY and leftBags[x].y <= truckY+50) then
 				leftBags[x].y = -100
 				bagHit()
 			end
 		end
-	elseif (truck.x > 240) then
+	elseif (truck.x > rightBorder-10) then
 		for x = 0,numBags do
-			if (rightBags[x].y >= 390 and rightBags[x].y <= 430) then
+			if (rightBags[x].y >= truckY and rightBags[x].y <= truckY+50) then
 				rightBags[x].y = -100
 				bagHit()
 			end
