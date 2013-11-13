@@ -33,6 +33,7 @@ points = 0
 roundTime = 30.0
 startRoundTime = 0
 level = 1
+mouseAxis = 0
 
 
 leftBorder = 86
@@ -97,14 +98,16 @@ local function onAxisEvent( event )
 		end
 	end
 	
-	if (event.device.type == "mouse") then
-		centerLine = 160 / 720
-		if (valAxis > centerLine) then
+	if (event.device.type == "mouse" and event.axis.number == 1) then
+		valAxis = math.round(valAxis * 100)
+		if (valAxis > mouseAxis) then
 			movingRight = true
 			movingLeft = false
-		elseif (valAxis < centerLine) then
+			mouseAxis = valAxis
+		elseif (valAxis < mouseAxis) then
 			movingRight = false
 			movingLeft = true
+			mouseAxis = valAxis
 		else 
 			movingRight = false
 			movingLeft = false
