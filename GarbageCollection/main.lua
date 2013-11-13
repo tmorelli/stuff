@@ -79,13 +79,12 @@ local function onAxisEvent( event )
 		return
 	end
 	
-	local valAxis = event.normalizedValue;
+	local valAxis = event.normalizedValue
 	
-	if (math.abs(valAxis) < 0.3) then
-		valAxis = 0;
-	end
-	
-	if (event.axis.number == 1) then
+	if (event.device.type == "joystick") then
+		if (math.abs(valAxis) < 0.3) then
+			valAxis = 0;
+		end
 		if (valAxis > 0) then
 			movingRight = true
 			movingLeft = false
@@ -97,6 +96,30 @@ local function onAxisEvent( event )
 			movingLeft = false
 		end
 	end
+	
+	if (event.device.type == "mouse") then
+		centerLine = 160 / 720
+		if (valAxis > centerLine) then
+			movingRight = true
+			movingLeft = false
+		elseif (valAxis < centerLine) then
+			movingRight = false
+			movingLeft = true
+		else 
+			movingRight = false
+			movingLeft = false
+		end
+	
+	end
+	
+	if (axisLabel ~= nil) then
+		axisLabel:removeSelf()
+		axisLabel = nil
+	end
+	axisLabel = display.newText("Axis Event: "..event.device.type.." Value: "..valAxis, 0,0, nil, 24);
+	axisLabel:setReferencePoint(display.BottomRightReferencePoint);
+	axisLabel.x = 600;
+	axisLabel.y = 200;
 	
 end
 
@@ -140,6 +163,7 @@ function touchEventListener(event )
 		restartGame()
 		return
 	end
+	
 	if (event.phase == "began" or  event.phase == "moved") then
 		if (event.x > 160) then
 			movingRight = true
@@ -892,6 +916,5 @@ chingSound = audio.loadStream("ching.mp3")
 dinkSound = audio.loadStream("dink.mp3")
 Runtime:addEventListener("touch", touchEventListener)
 Runtime:addEventListener( "axis", onAxisEvent )
-Runtime:addEventListener( "key", onKeyEvent )
 
 restoreState()
