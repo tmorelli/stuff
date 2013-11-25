@@ -34,6 +34,8 @@ roundTime = 30.0
 startRoundTime = 0
 level = 1
 mouseAxis = 0
+centerLine = 238
+activeControl = 3
 
 
 leftBorder = 86
@@ -66,13 +68,8 @@ state = PLAYING
 
 saveState = {}
 
-
+-----------------------------------------------------------------
 local function onAxisEvent( event )
-
-	if (splashShown == true) then
-		exitSplash()
-		return
-	end
 	
 	if (state == GAME_OVER) then
 		--showHighScores()
@@ -82,7 +79,17 @@ local function onAxisEvent( event )
 	
 	local valAxis = event.normalizedValue
 	
-	if (event.device.type == "joystick") then
+	--Joystick controls
+	if (event.device.type == "joystick" and event.axis.type == "x") then
+		if (splashShown == true) then
+			exitSplash()
+			return
+		end
+		
+		if (activeControl ~= 1) then
+			return
+		end
+		
 		if (math.abs(valAxis) < 0.3) then
 			valAxis = 0;
 		end
@@ -98,34 +105,109 @@ local function onAxisEvent( event )
 		end
 	end
 	
-	if (event.device.type == "mouse" and event.axis.number == 1) then
-		valAxis = math.round(valAxis * 100)
-		if (valAxis > mouseAxis) then
-			movingRight = true
-			movingLeft = false
-			mouseAxis = valAxis
-		elseif (valAxis < mouseAxis) then
-			movingRight = false
-			movingLeft = true
-			mouseAxis = valAxis
-		else 
-			movingRight = false
-			movingLeft = false
-		end
-	
-	end
-	
+	--Label for debugging axis controls
 	if (axisLabel ~= nil) then
 		axisLabel:removeSelf()
 		axisLabel = nil
 	end
-	axisLabel = display.newText("Axis Event: "..event.device.type.." Value: "..valAxis, 0,0, nil, 24);
+	axisLabel = display.newText("Axis Event: "..event.axis.type.." Name: "..valAxis, 0,0, nil, 24);
 	axisLabel:setReferencePoint(display.BottomRightReferencePoint);
-	axisLabel.x = 600;
+	axisLabel.x = 900;
 	axisLabel.y = 200;
 	
 end
+-----------------------------------------------------------------
+local function stopMoving( event )
+    movingRight = false
+	movingLeft = false
+end
 
+local function onMouseEvent( event )
+	if (splashShown == true) then
+		exitSplash()
+		return
+	end
+	
+	if (activeControl ~= 2) then
+		return
+	end
+	
+	if (state == GAME_OVER) then
+		--showHighScores()
+		restartGame()
+		return
+	end
+	
+	--Touchpad swipe controls
+	if (event.x > mouseAxis) then
+		movingRight = true
+		movingLeft = false
+		mouseAxis = event.x
+	elseif (event.x < mouseAxis) then
+		movingRight = false
+		movingLeft = true
+		mouseAxis = event.x
+	else 
+		movingRight = false
+		movingLeft = false
+	end
+
+	timer.performWithDelay(50, stopMoving)
+	
+	--Label for debugging mouse controls
+	if (mouseLable ~= nil) then
+		mouseLable:removeSelf()
+		mouseLable = nil
+	end
+	mouseLable = display.newText("Mouse Event: "..event.x.." Name: "..event.name, 0,0, nil, 24);
+	mouseLable:setReferencePoint(display.BottomRightReferencePoint);
+	mouseLable.x = 900;
+	mouseLable.y = 300;
+end
+
+
+-----------------------------------------------------------------
+function touchEventListener(event )
+
+	if (splashShown == true) then
+		exitSplash()
+		return
+	end
+	
+	if (activeControl ~= 3) then
+		return
+	end
+
+
+	if (state == GAME_OVER and event.phase == "began") then
+		-- showHighScores()
+		restartGame()
+		return
+	end
+	
+	if (event.phase == "began" or  event.phase == "moved") then
+		if (event.x > centerLine) then
+			movingRight = true
+			movingLeft = false
+		else
+			movingLeft = true
+			movingRight = false
+		end
+	elseif  (event.phase == "ended") then
+		movingLeft = false
+		movingRight = false
+	end
+	
+	--Label for debugging touch controls
+	if (touchLabel ~= nil) then
+		touchLabel:removeSelf()
+		touchLabel = nil
+	end
+	touchLabel = display.newText("Touch Coords: "..event.x.." Phase: "..event.phase, 0,0, nil, 24);
+	touchLabel:setReferencePoint(display.BottomRightReferencePoint);
+	touchLabel.x = 900;
+	touchLabel.y = 400;
+end
 -----------------------------------------------------------------
 function adjustTruckBounds()
 	if (truck.x < 86) then
@@ -152,34 +234,6 @@ end
 function showHighScores()
 	highScore.showHighScores(highScoresDone)	
 end]]--
------------------------------------------------------------------
-function touchEventListener(event )
-
-	if (splashShown == true) then
-		exitSplash()
-		return
-	end
-
-
-	if (state == GAME_OVER and event.phase == "began") then
-		--showHighScores()
-		restartGame()
-		return
-	end
-	
-	if (event.phase == "began" or  event.phase == "moved") then
-		if (event.x > 160) then
-			movingRight = true
-			movingLeft = false
-		else
-			movingLeft = true
-			movingRight = false
-		end
-	elseif  (event.phase == "ended") then
-		movingLeft = false
-		movingRight = false
-	end
-end
 -----------------------------------------------------------------
 function updateLaneMarkerLocations()
 	for x = 0, numLaneMarkers do
@@ -641,7 +695,7 @@ function initGraphics()
 	initBags()
 	initMissedBags()
 	truck = display.newImage("truck.png")
-	truck.x = 160
+	truck.x = centerLine
 	truck.y = truckY
 	truck.name = "truck"
 	initMeters()
@@ -918,6 +972,7 @@ pickemExitSound = audio.loadStream("pickemexit.mp3")
 chingSound = audio.loadStream("ching.mp3")
 dinkSound = audio.loadStream("dink.mp3")
 Runtime:addEventListener("touch", touchEventListener)
-Runtime:addEventListener( "axis", onAxisEvent )
+Runtime:addEventListener("axis", onAxisEvent)
+Runtime:addEventListener("mouse", onMouseEvent)
 
 restoreState()
