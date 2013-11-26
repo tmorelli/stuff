@@ -8,7 +8,7 @@
 
 
 
--- require("highScore")
+ require("logger")
 json = require("json")
 
 display.setStatusBar( display.HiddenStatusBar )
@@ -160,6 +160,7 @@ local function onMouseEvent( event )
 		mouseLable = nil
 	end
 	mouseLable = display.newText("Mouse Event: "..event.x.." Name: "..event.name, 0,0, nil, 24);
+	logger.log("MouseEvent,"..event.x..","..event.y..","..event.name)
 	mouseLable:setReferencePoint(display.BottomRightReferencePoint);
 	mouseLable.x = 900;
 	mouseLable.y = 300;
@@ -204,6 +205,7 @@ function touchEventListener(event )
 		touchLabel = nil
 	end
 	touchLabel = display.newText("Touch Coords: "..event.x.." Phase: "..event.phase, 0,0, nil, 24);
+	logger.log("TouchCoords,"..event.x..","..event.y..","..event.phase)
 	touchLabel:setReferencePoint(display.BottomRightReferencePoint);
 	touchLabel.x = 900;
 	touchLabel.y = 400;
@@ -222,6 +224,7 @@ function restartGame()
 	points = 0
 	gameOverText:removeSelf()
 	gameOverText = nil
+	logger.init()
 	startNextLevel()
 	
 end
@@ -390,7 +393,7 @@ function bagTouch(self,event)
 		local dinkSoundChannel = audio.play(dinkSound);
 		thisRoundOver = false
 		bagsTouched = bagsTouched+1
-		
+		logger.log("BagTouched")
 		print("bagTouch"..bagsTouched..","..bagsHit..","..correctColor..","..incorrectColor)
 		
 		if (bagsTouched <= prize/1000) then
@@ -569,6 +572,8 @@ function choosePrize(_bags)
 end
 -----------------------------------------------------------------
 function roundOver()
+	logger.log("RoundOver,"..points)
+
 	state = ROUND_OVER
 	speed = 0
 	bagsTouched = 0
@@ -621,6 +626,8 @@ function roundOver()
 end
 -----------------------------------------------------------------
 function gameOver()
+	logger.log("Game Over")
+	logger.close()
 	state = GAME_OVER
 	speed = 0
 	gameOverText = display.newText("Game Over", 0,0, nil, 24);
@@ -743,6 +750,8 @@ function updateBags()
 end
 -----------------------------------------------------------------
 function placeNextRightHouse()
+	logger.log("PlaceNextRightHouse")
+
 	for x = 0,numHouses do
 		if (rightHouses[x].y < 0) then
 			rightHouses[x].y = 0
@@ -753,6 +762,7 @@ function placeNextRightHouse()
 end
 -----------------------------------------------------------------
 function placeNextLeftHouse()
+	logger.log("PlaceNextLeftHouse")
 	for x = 0,numHouses do
 		if (leftHouses[x].y < 0) then
 			leftHouses[x].y = 0
@@ -763,6 +773,7 @@ function placeNextLeftHouse()
 end
 -----------------------------------------------------------------
 function bagHit()
+	logger.log("BagHit")
 	points = points + 100 * level
 	bagsHit = bagsHit + 1
 	local chingChannel = audio.play(chingSound)
@@ -772,6 +783,7 @@ function bagHit()
 end
 -----------------------------------------------------------------
 function bagMissed()
+	logger.log("BagMissed")
 	if (totalMisses < maxMisses) then
 		missedBags[totalMisses].alpha = 1.0
 		missedBags[totalMisses]:setFillColor(255,0,0) 
@@ -811,6 +823,8 @@ function playUpdate()
 		truck.x = truck.x - truckHorizontalSpeed	
 	end
 	adjustTruckBounds()
+	logger.log("Truck,"..truck.x)
+
 	updateLaneMarkerLocations()
 	updateHouses()
 	updateBags()
@@ -959,7 +973,7 @@ function updateHighScore()
 end
 --]]
 
-
+logger.init()
 --highScore.init()
 initGraphics()
 backgroundMusic = audio.loadStream("garbage.mp3")
