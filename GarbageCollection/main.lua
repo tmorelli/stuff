@@ -112,6 +112,10 @@ local function onAxisEvent( event )
 	
 	local valAxis = event.normalizedValue
 	
+	if (math.abs(valAxis) < 0.3) then
+		valAxis = 0
+	end
+	
 	--Joystick controls
 	if (event.device.type == "joystick" and event.axis.type == "x") then
 		if (splashShown == true) then
@@ -123,9 +127,6 @@ local function onAxisEvent( event )
 			return
 		end
 		
-		if (math.abs(valAxis) < 0.3) then
-			valAxis = 0
-		end
 		if (state == PLAYING) then
 			if (valAxis > 0) then
 				movingRight = true
@@ -140,25 +141,26 @@ local function onAxisEvent( event )
 		end
 	end
 	
+	if (math.abs(valAxis) < 1) then
+		valAxis = 0
+	end
+	
 	if (event.device.type == "joystick" and state == ROUND_OVER) then
-		-- if (math.abs(valAxis < 0.3)) then
-			-- valAxis = 0
-		-- end
 		bagsHitImages[activeBag].alpha = 1
 		if (valAxis > 0 and event.axis.type == "x") then
 			activeBag = activeBag + 1
 		elseif (valAxis < 0 and event.axis.type == "x") then
 			activeBag = activeBag - 1
 		elseif (valAxis > 0) then		
-			activeBag = activeBag - 4
-		elseif (valAxis < 0) then
 			activeBag = activeBag + 4
+		elseif (valAxis < 0) then
+			activeBag = activeBag - 4
 		end
 		if (activeBag < 0) then
 			activeBag = 0
 		end
-		if (activeBag >= numBags) then
-			activeBag = numBags -1
+		if (activeBag > numBags) then
+			activeBag = numBags
 		end
 		bagsHitImages[activeBag].alpha = .6
 	end
@@ -170,16 +172,20 @@ local function onAxisEvent( event )
 		axisLabel:removeSelf()
 		axisLabel = nil
 	end
-	axisLabel = display.newText("Axis Event: "..event.axis.type.." Name: "..valAxis, 0,0, nil, 24);
-	axisLabel:setReferencePoint(display.BottomRightReferencePoint);
-	axisLabel.x = 900;
-	axisLabel.y = 200;
+	axisLabel = display.newText("Axis Event: "..event.axis.type.." Name: "..valAxis, 0,0, nil, 24)
+	axisLabel:setReferencePoint(display.BottomRightReferencePoint)
+	axisLabel.x = 900
+	axisLabel.y = 200
 	
 end
 
 local function onKeyEvent( event )
-	if ((event.keyName == "buttonA") and (activeControl == JOYSTICK_CONTROL) and (state == ROUND_OVER)) then
-		bagTouch(bagsHitImages[activeBag], nil)
+	if (event.keyName == "buttonA" and activeControl == JOYSTICK_CONTROL and state == ROUND_OVER) then
+		buttonLabel = display.newText("Button Event: ".." Name: "..event.name, 0,0, nil, 24)
+		buttonLabel:setReferencePoint(display.BottomRightReferencePoint)
+		buttonLabel.x = 900
+		buttonLabel.y = 500
+		bagTouch(bagsHitImages[activeBag],event)
 	end
 end
 -----------------------------------------------------------------
@@ -480,7 +486,7 @@ function bagTouch(self,event)
 		correctColor = {255,0,0}
 --]]
 
-	if ((event.phase == "began" and state ~= PICKEMDELAY) or event == nil ) then
+	if ((event.phase == "began" and state ~= PICKEMDELAY) or event.name == "key" ) then
 	
 		if (self.selectable == true) then
 			self.selectable = false
