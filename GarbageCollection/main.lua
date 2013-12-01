@@ -806,7 +806,6 @@ end
 -----------------------------------------------------------------
 function placeNextRightHouse()
 	logger.log("PlaceNextRightHouse")
-
 	for x = 0,numHouses do
 		if (rightHouses[x].y < 0) then
 			rightHouses[x].y = 0
