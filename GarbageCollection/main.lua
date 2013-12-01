@@ -43,7 +43,7 @@ JOYSTICK_CONTROL = 1
 MOUSESWIPE_CONTROL = 2
 MOUSETOUCH_CONTROL = 3
 
-activeControl = MOUSE_TOUCH_CONTROL
+activeControl = MOUSETOUCH_CONTROL
 
 chooseRandomControl = false
 
