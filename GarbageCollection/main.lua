@@ -32,7 +32,7 @@ framesSinceLastRandomLeftHouse = timeForRandomHouse
 framesSinceLastRandomHouse=timeForRandomHouse
 points = 0
 bonusPrize = 0
-roundTime = 5.0
+roundTime = 50.0
 startRoundTime = 0
 level = 1
 mouseAxis = 0
@@ -45,7 +45,7 @@ MOUSETOUCH_CONTROL = 3
 
 activeControl = JOYSTICK_CONTROL
 
-chooseRandomControl = false
+chooseRandomControl = true
 
 if (chooseRandomControl == true) then
 	controlLevel1 = math.random(1,3)
@@ -59,6 +59,11 @@ if (chooseRandomControl == true) then
 	end
 	activeControl = controlLevel1
 end
+
+instructionsLine1 = nil
+instructionsLine2 = nil
+instructionsLine3 = nil
+instructionsLine4 = nil
 
 
 currentPoints = 0
@@ -96,6 +101,7 @@ PLAYING = 0
 ROUND_OVER = 1
 GAME_OVER = 2
 PICKEM_DELAY = 3
+WAITING_FOR_NEXT_LEVEL = 4
 
 state = PLAYING
 
@@ -247,6 +253,12 @@ function touchEventListener(event )
 		return
 	end
 	
+	if (event.phase == "began" and state == WAITING_FOR_NEXT_LEVEL) then
+		startNextLevel()
+		return
+	end
+	
+	
 	if (activeControl ~= MOUSETOUCH_CONTROL) then
 		return
 	end
@@ -307,7 +319,7 @@ function restartGame()
 	loggerLabel.x = 900;
 	loggerLabel.y = 300;	
 
-	startNextLevel()
+	initNextLevel()
 	
 end
 
@@ -381,7 +393,7 @@ function initBags()
 	end
 end
 -----------------------------------------------------------------
-function startNextLevel()
+function initNextLevel()
 	level = level + 1
 	levelLabel.text = "Level: "..level
 	
@@ -396,7 +408,6 @@ function startNextLevel()
 	framesSinceLastRandomRightHouse = timeForRandomHouse
 	framesSinceLastRandomLeftHouse = timeForRandomHouse
 	framesSinceLastRandomHouse = timeForRandomHouse
-	speed = 4.5
 
 	if (chooseRandomControl == true) then
 		if (level == 2) then
@@ -407,9 +418,7 @@ function startNextLevel()
 		logger.log("LevelStart"..level..",activeControl,"..activeControl)
 	end
 
-	currentLevelSpeed = speed
-	movingRight = false
-	movingLeft = false
+	displayInstructions()
 
 	for x = 0,numBags do
 		rightBags[x].y = -100
@@ -423,9 +432,21 @@ function startNextLevel()
 	for x = 0,numHouses do
 		leftHouses[x].y = -100
 	end
+	state = WAITING_FOR_NEXT_LEVEL
+	--startNextLevel()
+end
+
+-----------------------------------------------------------------
+function startNextLevel()
+	speed = 4.5
+	currentLevelSpeed = speed
+	movingRight = false
+	movingLeft = false
 	state = PLAYING
 	startRoundTime = system.getTimer()
 end
+
+
 -----------------------------------------------------------------
 function scalePickemPrize()
 	if (pickemPrize.xScale >= 1.5) then
@@ -474,7 +495,7 @@ function pickemOver()
 	if (level == 3) then
 		gameOver()
 	else
-		startNextLevel()
+		initNextLevel()
 	end
 end
 -----------------------------------------------------------------
@@ -1051,7 +1072,11 @@ end
 
 -----------------------------------------------------------------
 function showSplash()
+
+
 	splashShown = true
+	
+--[[	
 	splashText = display.newText("Touch Left and Right To Move", 0,0, nil, 18);
 	splashText:setReferencePoint(display.TopLeftReferencePoint);
 	splashText.x = 30;
@@ -1066,7 +1091,7 @@ function showSplash()
 	splashText3:setReferencePoint(display.TopLeftReferencePoint);
 	splashText3.x = 30;
 	splashText3.y = 140;
-
+--]]
 end
 
 -----------------------------------------------------------------
@@ -1091,6 +1116,64 @@ function startGame()
 	startRoundTime = system.getTimer()
 	Runtime:addEventListener("enterFrame", frameUpdate)
 end
+function displayInstructions()
+	local line1 = " "
+	local line2 = " "
+	local line3 = " "
+	local line4 = " "
+	
+
+	if (instructionsLine1 ~= nil) then
+		instructionsLine1:removeSelf()
+		instructionsLine1 = nil
+	end
+	if (instructionsLine2 ~= nil) then
+		instructionsLine2:removeSelf()
+		instructionsLine2 = nil
+	end
+	if (instructionsLine3 ~= nil) then
+		instructionsLine3:removeSelf()
+		instructionsLine3 = nil
+	end
+	if (instructionsLine4 ~= nil) then
+		instructionsLine4:removeSelf()
+		instructionsLine4 = nil
+	end
+	if (activeControl == JOYSTICK_CONTROL) then
+		line1 = "Move truck with left thumbstick"
+		line2 = "In Bonus, use thumbstick to highlight bag"
+		line3 = "In Bonus, press O to select green bag"
+		line4 = "Tap touchpad to start"
+		
+	end
+	if (activeControl == MOUSESWIPE_CONTROL) then
+		line1 = "Move truck by swiping across touchpad"
+		line2 = "In Bonus, swipe touchpad to highlight bag"
+		line3 = "In Bonus, press touchpad to select green bag"
+		line4 = "Tap touchpad to start"
+	end
+	if (activeControl == MOUSETOUCH_CONTROL) then
+		line1 = "Move truck by moving cursor to a side then pressing touchpad"
+		line2 = "In Bonus, move cursor to bag"
+		line3 = "In Bonus, press touchpad to select green bag"
+		line4 = "Tap touchpad to start"
+	end
+	
+	instructionsLine1 = display.newText(line1, 500,10, nil, 18);
+	instructionsLine1:setReferencePoint(display.TopLeftReferencePoint);
+	instructionsLine2 = display.newText(line2, 500,30, nil, 18);
+	instructionsLine2:setReferencePoint(display.TopLeftReferencePoint);
+	instructionsLine3 = display.newText(line3, 500,50, nil, 18);
+	instructionsLine3:setReferencePoint(display.TopLeftReferencePoint);
+	instructionsLine4 = display.newText(line4, 500,70, nil, 18);
+	instructionsLine4:setReferencePoint(display.TopLeftReferencePoint);
+
+	
+	
+	
+	
+end
+
 -----------------------------------------------------------------
 function restoreState()
 
@@ -1167,6 +1250,6 @@ loggerLabel = display.newText("log:"..logger.getFilename(), 0,0, nil, 24);
 loggerLabel:setReferencePoint(display.BottomRightReferencePoint);
 loggerLabel.x = 900;
 loggerLabel.y = 300;
-
+displayInstructions()
 
 restoreState()
