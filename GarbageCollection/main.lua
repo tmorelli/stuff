@@ -39,6 +39,7 @@ activeControl = 3
 currentPoints = 0
 START_PRIZE = 10000
 pointDecrease = 100
+onTarget = false
 
 leftBorder = 86
 rightBorder = 390
@@ -608,7 +609,8 @@ function roundOver()
 	while (incorrectColor == correctColor) do
 		incorrectColor = math.random(1,#colors)
 	end
-	
+	onTarget = false
+
 	
 
 	for x = 0,bagsHit-1 do
@@ -636,6 +638,8 @@ function gameOver()
 	gameOverText:setReferencePoint(display.TopLeftReferencePoint);
 	gameOverText.x = 90;
 	gameOverText.y = 80;
+	onTarget = false
+
 end
 -----------------------------------------------------------------
 function updateMeters()
@@ -779,11 +783,13 @@ end
 function bagHit()
 	logger.log("BagHit")
 --	points = points + 100 * level
-	points = points + currentPoints
+	points = points + awardPoints
 	bagsHit = bagsHit + 1
 	local chingChannel = audio.play(chingSound)
 	updateMeters()
 	updateSaveState()
+	onTarget = false
+
 
 end
 -----------------------------------------------------------------
@@ -802,11 +808,18 @@ function bagMissed()
 end
 -----------------------------------------------------------------
 function checkCollisions()
+	stillOnTarget = false
 	if (truck.x < leftBorder+10 ) then
 		for x = 0,numBags do
 			if (leftBags[x].y >= truckY and leftBags[x].y <= truckY+50) then
 				leftBags[x].y = -100
 				bagHit()
+			elseif (leftBags[x].y >= 0 ) then
+				if(onTarget == false) then
+					awardPoints = currentPoints
+				end
+				onTarget = true
+				stillOnTarget = true
 			end
 		end
 	elseif (truck.x > rightBorder-10) then
@@ -814,8 +827,17 @@ function checkCollisions()
 			if (rightBags[x].y >= truckY and rightBags[x].y <= truckY+50) then
 				rightBags[x].y = -100
 				bagHit()
+			elseif (rightBags[x].y >= 0 ) then
+				if(onTarget == false) then
+					awardPoints = currentPoints
+				end
+				onTarget = true
+				stillOnTarget = true
 			end
 		end
+	end
+	if (stillOnTarget == false) then
+		onTarget = false
 	end
 end
 
