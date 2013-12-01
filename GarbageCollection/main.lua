@@ -31,6 +31,7 @@ framesSinceLastRandomRightHouse = timeForRandomHouse
 framesSinceLastRandomLeftHouse = timeForRandomHouse
 framesSinceLastRandomHouse=timeForRandomHouse
 points = 0
+bonusPrize = 0
 roundTime = 5.0
 numBags = 12
 startRoundTime = 0
@@ -44,7 +45,7 @@ MOUSETOUCH_CONTROL = 3
 
 activeControl = MOUSE_TOUCH_CONTROL
 
-chooseRandomControl = true
+chooseRandomControl = false
 
 if (chooseRandomControl == true) then
 	controlLevel1 = math.random(1,3)
@@ -64,6 +65,11 @@ currentPoints = 0
 START_PRIZE = 10000
 pointDecrease = 100
 onTarget = false
+currentBonusValue = 0
+totalBonusWin = 0
+BONUS_START_VALUE = 10000
+
+
 
 leftBorder = 86
 rightBorder = 390
@@ -351,7 +357,7 @@ function startNextLevel()
 	framesSinceLastRandomRightHouse = timeForRandomHouse
 	framesSinceLastRandomLeftHouse = timeForRandomHouse
 	framesSinceLastRandomHouse = timeForRandomHouse
---	speed = 3+1.5*level
+	speed = 4.5
 
 	if (chooseRandomControl == true) then
 		if (level == 2) then
@@ -400,7 +406,7 @@ function exitPickem()
 	audio.play(pickemExitSound)
 
 	scaleDirection = 1
-	pickemPrize = display.newText(prize,110,200,nil,36)
+	pickemPrize = display.newText(totalBonusWin,110,200,nil,36)
 	pickemPrizeTimer = timer.performWithDelay(16,scalePickemPrize)
 	timer.performWithDelay(3000,pickemOver)
 
@@ -421,7 +427,7 @@ function pickemOver()
 	roundOverInstruction2:removeSelf()
 	roundOverInstruction2 = nil
 	
-	for x = 0,numBags-1 do
+	for x = 0,15 do
 		bagsHitImages[x]:removeSelf()
 		bagsHitImages[x] = nil
 	end
@@ -443,31 +449,28 @@ function bagTouch(self,event)
 
 	if (event.phase == "began" and state ~= PICKEMDELAY) then
 	
-		local dinkSoundChannel = audio.play(dinkSound);
-		thisRoundOver = false
-		bagsTouched = bagsTouched+1
-		logger.log("BagTouched")
-		print("bagTouch"..bagsTouched..","..numBags..","..correctColor..","..incorrectColor)
+		if (self.selectable == true) then
+			self.selectable = false
+			local dinkSoundChannel = audio.play(dinkSound);
+			thisRoundOver = false
+			logger.log("BagTouched")
+			print("bagTouch"..bagsTouched..","..numBags..","..correctColor..","..incorrectColor)
 		
-		-- if (bagsTouched <= prize/1000) then
-			-- self:setFillColor(colors[correctColor][1],colors[correctColor][2],colors[correctColor][3])
-			-- -- self:fillColor(255,0,0)
-		-- else
-			-- self:setFillColor(colors[incorrectColor][1],colors[incorrectColor][2],colors[incorrectColor][3])
-			-- -- self:fillColor(0,0,255)
-		-- end	
-		self:setFillColor(colors[correctColor][1],colors[correctColor][2],colors[correctColor][3])
-		if (bagsTouched == numBags) then
-			thisRoundOver = true
-		end
-		
+			self:setFillColor(255,255,255)
+			totalBonusWin = totalBonusWin + currentBonusValue
+			if (bonusSelectionsRemaining() <= 0) then
+				thisRoundOver = true
+			end
 
-		if (thisRoundOver == true) then
-			points = points+prize
-			state=PICKEMDELAY
-			updateMeters()
-			exitPickem()
+			if (thisRoundOver == true) then
+				points = points+totalBonusWin
+				state=PICKEMDELAY
+				updateMeters()
+				exitPickem()
 --			timer.performWithDelay(3000,pickemOver)
+			end
+		else
+			logger.log("BonnusBagNotEnabled")
 		end
 
 --[[	
@@ -625,6 +628,16 @@ end
 		-- return picks*1000
 -- end
 -----------------------------------------------------------------
+function bonusSelectionsRemaining()
+	local count = 0
+	for x=0,15 do
+		if (bagsHitImages[x].selectable == true) then
+			count = count+1
+		end
+	end
+	return count
+end
+-----------------------------------------------------------------
 function roundOver()
 	logger.log("RoundOver,"..points)
 
@@ -662,23 +675,35 @@ function roundOver()
 	-- end
 	onTarget = false
 
-	
-
-	for x = 0,numBags-1 do
+	bonusPrize = 0
+	totalBonusWin = 0
+	currentBonusValue = BONUS_START_VALUE
+	for x = 0,15 do
 		bagsHitImages[x] = display.newImage("bag.png")
 		bagsHitImages[x].x = 100 + 30*rowIndex
 		bagsHitImages[x].y = yLocation
 		bagsHitImages[x].touch = bagTouch
 		bagsHitImages[x]:addEventListener("touch")
 		bagsHitImages[x].id = x
+		bagsHitImages[x].selectable = false
+		
 		
 		rowIndex = rowIndex + 1
-		if (rowIndex == 5) then
+		if (rowIndex == 4) then
 			rowIndex = 0
 			yLocation = yLocation + 30
 		end
 	end
-	bagsHitImages[0]:setFillColor(255,255,0)
+	local totalRandomBagsChosen = 0
+	while (totalRandomBagsChosen < 5) do
+		local rnd = math.random(0,15)
+		if (bagsHitImages[rnd].selectable == false) then
+			bagsHitImages[rnd]:setFillColor(colors[2][1],colors[2][2],colors[2][3])
+			totalRandomBagsChosen = totalRandomBagsChosen + 1
+			bagsHitImages[rnd].selectable = true
+		end
+	end
+	
 end
 -----------------------------------------------------------------
 function gameOver()
@@ -948,6 +973,11 @@ function frameUpdate(event)
 		if (currentPoints < 0) then
 			currentPoints = 0
 		end
+	elseif (state == ROUND_OVER) then
+		currentBonusValue = currentBonusValue - pointDecrease
+		if (currentBonusValue <= 0) then
+			currentBonusValue = 0
+		end
 	end
 end
 ---------------------------------------------------------------------------
@@ -1078,7 +1108,7 @@ logger.init()
 --highScore.init()
 initGraphics()
 backgroundMusic = audio.loadStream("garbage.mp3")
-backgroundMusicChannel = audio.play( backgroundMusic, { channel=1, loops=-1, fadein=5000 }  )  -- play the background music on channel 1, loop infinitely, and fadein over 5 seconds 
+--backgroundMusicChannel = audio.play( backgroundMusic, { channel=1, loops=-1, fadein=5000 }  )  -- play the background music on channel 1, loop infinitely, and fadein over 5 seconds 
 
 
 pooperSound = audio.loadStream("pooper.mp3")
