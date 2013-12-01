@@ -259,7 +259,7 @@ function restartGame()
 	loggerLabel = display.newText("log:"..logger.getFilename(), 0,0, nil, 24);
 	loggerLabel:setReferencePoint(display.BottomRightReferencePoint);
 	loggerLabel.x = 900;
-	loggerLabel.y = 300;
+	loggerLabel.y = 300;	
 
 	startNextLevel()
 	
