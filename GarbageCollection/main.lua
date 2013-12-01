@@ -35,7 +35,8 @@ bonusPrize = 0
 roundTime = 50.0
 startRoundTime = 0
 level = 1
-mouseAxis = 0
+mouseX = 0
+mouseY = 0
 centerLine = 238
 activeBag = 0
 
@@ -43,9 +44,13 @@ JOYSTICK_CONTROL = 1
 MOUSESWIPE_CONTROL = 2
 MOUSETOUCH_CONTROL = 3
 
-activeControl = JOYSTICK_CONTROL
+--activeControl = JOYSTICK_CONTROL
+activeControl = MOUSESWIPE_CONTROL
 
 chooseRandomControl = true
+swiping = false
+swipeTimer = nil
+swipeThreshold = 50
 
 if (chooseRandomControl == true) then
 	controlLevel1 = math.random(1,3)
@@ -72,7 +77,7 @@ pointDecrease = 100
 onTarget = false
 currentBonusValue = 0
 totalBonusWin = 0
-BONUS_START_VALUE = 10000
+BONUS_START_VALUE = 25000
 
 
 
@@ -110,6 +115,10 @@ saveState = {}
 -----------------------------------------------------------------
 local function onAxisEvent( event )
 	
+	if (activeControl ~= JOYSTICK_CONTROL) then
+		return
+	end
+	
 	if (state == GAME_OVER) then
 		--showHighScores()
 		restartGame()
@@ -128,11 +137,6 @@ local function onAxisEvent( event )
 			exitSplash()
 			return
 		end
-		
-		if (activeControl ~= JOYSTICK_CONTROL) then
-			return
-		end
-		
 		if (state == PLAYING) then
 			if (valAxis > 0) then
 				movingRight = true
@@ -170,27 +174,10 @@ local function onAxisEvent( event )
 		end
 		bagsHitImages[activeBag].alpha = .6
 	end
-	
-	
-	
-	--Label for debugging axis controls
-	if (axisLabel ~= nil) then
-		axisLabel:removeSelf()
-		axisLabel = nil
-	end
-	axisLabel = display.newText("Axis Event: "..event.axis.type.." Name: "..valAxis, 0,0, nil, 24)
-	axisLabel:setReferencePoint(display.BottomRightReferencePoint)
-	axisLabel.x = 900
-	axisLabel.y = 200
-	
 end
 
 local function onKeyEvent( event )
 	if (event.keyName == "buttonA" and activeControl == JOYSTICK_CONTROL and state == ROUND_OVER) then
-		buttonLabel = display.newText("Button Event: ".." Name: "..event.name, 0,0, nil, 24)
-		buttonLabel:setReferencePoint(display.BottomRightReferencePoint)
-		buttonLabel.x = 900
-		buttonLabel.y = 500
 		bagTouch(bagsHitImages[activeBag],event)
 	end
 end
@@ -200,53 +187,110 @@ local function stopMoving( event )
 	movingLeft = false
 end
 
+local function stopSwiping (event)
+	swiping = false
+	bagsHitImages[activeBag].alpha = 1
+	print ("Start:"..startSwipeX.." End:" .. swipeX)
+	if (swipeX - startSwipeX > swipeThreshold) then
+		activeBag = activeBag + 1
+	elseif (startSwipeX -swipeX > swipeThreshold) then
+		activeBag = activeBag - 1
+	end	
+	if (swipeY - startSwipeY > swipeThreshold) then		
+		activeBag = activeBag + 4
+	elseif (startSwipeY -swipeY > swipeThreshold) then
+		activeBag = activeBag - 4
+	end
+	if (activeBag < 0) then
+		activeBag = 0
+	end
+	if (activeBag > numBags) then
+		activeBag = numBags
+	end
+	bagsHitImages[activeBag].alpha = .6
+end
+
 local function onMouseEvent( event )
-	if (splashShown == true) then
-		exitSplash()
-		return
-	end
-	
-	if (activeControl ~= MOUSESWIPE_CONTROL) then
-		return
-	end
-	
 	if (state == GAME_OVER) then
 		--showHighScores()
 		restartGame()
 		return
 	end
 	
+	if (activeControl ~= MOUSESWIPE_CONTROL) then
+		return
+	end
+
+	if (splashShown == true) then
+		exitSplash()
+		return
+	end
+	
 	--Touchpad swipe controls
-	if (event.x > mouseAxis) then
-		movingRight = true
-		movingLeft = false
-		mouseAxis = event.x
-	elseif (event.x < mouseAxis) then
-		movingRight = false
-		movingLeft = true
-		mouseAxis = event.x
-	else 
-		movingRight = false
-		movingLeft = false
+	if (state == PLAYING) then
+		if (event.x > mouseX) then
+			movingRight = true
+			movingLeft = false
+			mouseX = event.x
+		elseif (event.x < mouseX) then
+			movingRight = false
+			movingLeft = true
+			mouseX = event.x
+		else 
+			movingRight = false
+			movingLeft = false
+		end
+	end
+	-- Touchpad swipe bonus round controls
+	if (state == ROUND_OVER) then
+		if (swipeTimer ~= nil) then
+			timer.cancel(swipeTimer)
+		end
+		if (swiping == false) then
+			startSwipeX = event.x
+			startSwipeY = event.y
+		end
+		swiping = true
+		swipeX = event.x
+		swipeY = event.y
+		
+--[[		
+		bagsHitImages[activeBag].alpha = 1
+		if (event.x > mouseX) then
+			activeBag = activeBag + 1
+			mouseX = event.x
+		elseif (event.x < mouseX) then
+			activeBag = activeBag - 1
+			mouseX = event.x
+		elseif (event.y > mouseY) then		
+			activeBag = activeBag + 4
+			mouseY = event.y
+		elseif (event.y < mouseY) then
+			activeBag = activeBag - 4
+			mouseY = event.y
+		end
+	--]]
+		swipeTimer = timer.performWithDelay(100, stopSwiping)
+
+		
+--[[		
+		if (activeBag < 0) then
+			activeBag = 0
+		end
+		if (activeBag > numBags) then
+			activeBag = numBags
+		end
+		bagsHitImages[activeBag].alpha = .6
+		
+--]]		
 	end
 
 	timer.performWithDelay(50, stopMoving)
-	
-	--Label for debugging mouse controls
-	if (mouseLable ~= nil) then
-		mouseLable:removeSelf()
-		mouseLable = nil
-	end
-	mouseLable = display.newText("Mouse Event: "..event.x.." Name: "..event.name, 0,0, nil, 24);
-	logger.log("MouseEvent,"..event.x..","..event.y..","..event.name)
-	mouseLable:setReferencePoint(display.BottomRightReferencePoint);
-	mouseLable.x = 900;
-	mouseLable.y = 300;
 end
 
 
 -----------------------------------------------------------------
-function touchEventListener(event )
+function touchEventListener(event)
 
 	if (splashShown == true) then
 		exitSplash()
@@ -256,6 +300,10 @@ function touchEventListener(event )
 	if (event.phase == "began" and state == WAITING_FOR_NEXT_LEVEL) then
 		startNextLevel()
 		return
+	end
+	
+	if (activeControl == MOUSESWIPE_CONTROL and state == ROUND_OVER) then
+		bagTouch(bagsHitImages[activeBag],event)
 	end
 	
 	
@@ -282,17 +330,6 @@ function touchEventListener(event )
 		movingLeft = false
 		movingRight = false
 	end
-	
-	--Label for debugging touch controls
-	if (touchLabel ~= nil) then
-		touchLabel:removeSelf()
-		touchLabel = nil
-	end
-	touchLabel = display.newText("Touch Coords: "..event.x.." Phase: "..event.phase, 0,0, nil, 24);
-	logger.log("TouchCoords,"..event.x..","..event.y..","..event.phase)
-	touchLabel:setReferencePoint(display.BottomRightReferencePoint);
-	touchLabel.x = 900;
-	touchLabel.y = 400;
 end
 -----------------------------------------------------------------
 function adjustTruckBounds()
@@ -304,6 +341,18 @@ function adjustTruckBounds()
 end
 -----------------------------------------------------------------
 function restartGame()
+	if (chooseRandomControl == true) then
+		controlLevel1 = math.random(1,3)
+		controlLevel2 = math.random(1,3)
+		controlLevel3 = math.random(1,3)
+		while (controlLevel2 == controlLevel1) do
+			controlLevel2 = math.random(1,3)
+		end
+		while ((controlLevel3 == controlLevel2) or (controlLevel3 == controlLevel1)) do
+			controlLevel3 = math.random(1,3)
+		end
+		activeControl = controlLevel1
+	end
 	level = 0
 	points = 0
 	gameOverText:removeSelf()
@@ -523,6 +572,7 @@ function bagTouch(self,event)
 			end
 
 			if (thisRoundOver == true) then
+				logger.log("Total bonus: "..totalBonusWin)
 				points = points+totalBonusWin
 				state=PICKEMDELAY
 				updateMeters()
@@ -742,8 +792,10 @@ function roundOver()
 		bagsHitImages[x] = display.newImage("bag.png")
 		bagsHitImages[x].x = 100 + 30*rowIndex
 		bagsHitImages[x].y = yLocation
-		bagsHitImages[x].touch = bagTouch
-		bagsHitImages[x]:addEventListener("touch")
+		if (activeControl == MOUSETOUCH_CONTROL) then
+			bagsHitImages[x].touch = bagTouch
+			bagsHitImages[x]:addEventListener("touch")
+		end
 		bagsHitImages[x].id = x
 		bagsHitImages[x].selectable = false
 		
@@ -764,7 +816,7 @@ function roundOver()
 		end
 	end
 	
-	if (activeControl == JOYSTICK_CONTROL) then
+	if (activeControl == JOYSTICK_CONTROL or activeControl == MOUSESWIPE_CONTROL) then
 		bagsHitImages[activeBag].alpha = .6
 	end
 end
