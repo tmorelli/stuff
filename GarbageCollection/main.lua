@@ -31,7 +31,8 @@ framesSinceLastRandomRightHouse = timeForRandomHouse
 framesSinceLastRandomLeftHouse = timeForRandomHouse
 framesSinceLastRandomHouse=timeForRandomHouse
 points = 0
-roundTime = 50.0
+roundTime = 5.0
+numBags = 12
 startRoundTime = 0
 level = 1
 mouseAxis = 0
@@ -420,7 +421,7 @@ function pickemOver()
 	roundOverInstruction2:removeSelf()
 	roundOverInstruction2 = nil
 	
-	for x = 0,bagsHit-1 do
+	for x = 0,numBags-1 do
 		bagsHitImages[x]:removeSelf()
 		bagsHitImages[x] = nil
 	end
@@ -446,16 +447,17 @@ function bagTouch(self,event)
 		thisRoundOver = false
 		bagsTouched = bagsTouched+1
 		logger.log("BagTouched")
-		print("bagTouch"..bagsTouched..","..bagsHit..","..correctColor..","..incorrectColor)
+		print("bagTouch"..bagsTouched..","..numBags..","..correctColor..","..incorrectColor)
 		
-		if (bagsTouched <= prize/1000) then
-			self:setFillColor(colors[correctColor][1],colors[correctColor][2],colors[correctColor][3])
---			self:fillColor(255,0,0)
-		else
-			self:setFillColor(colors[incorrectColor][1],colors[incorrectColor][2],colors[incorrectColor][3])
---			self:fillColor(0,0,255)
-		end	
-		if ((bagsTouched == prize/1000 + 1) or (bagsTouched == bagsHit)) then
+		-- if (bagsTouched <= prize/1000) then
+			-- self:setFillColor(colors[correctColor][1],colors[correctColor][2],colors[correctColor][3])
+			-- -- self:fillColor(255,0,0)
+		-- else
+			-- self:setFillColor(colors[incorrectColor][1],colors[incorrectColor][2],colors[incorrectColor][3])
+			-- -- self:fillColor(0,0,255)
+		-- end	
+		self:setFillColor(colors[correctColor][1],colors[correctColor][2],colors[correctColor][3])
+		if (bagsTouched == numBags) then
 			thisRoundOver = true
 		end
 		
@@ -498,130 +500,130 @@ function bagTouch(self,event)
 	end
 end
 -----------------------------------------------------------------
-function choosePrize(_bags)
-		if (bagsHit == 0) then
-			return 0
-		end		
-		local picks = 0
-		local rnd = math.random(0,100)
-		if (bagsHit == 1) then
-			picks = 0
-		end		
-		if (bagsHit == 2) then
-			if (rnd < 50) then
-				picks = 0
-			else
-				picks = 1
-			end
-		end				
-		if (bagsHit == 3) then
-			if (rnd < 50) then
-				picks = 0
-			elseif (rnd < 75) then
-				picks = 1
-			else
-				picks = 2
-			end
-		end		
-		if (bagsHit == 4) then
-			if (rnd < 30) then
-				picks = 0
-			elseif (rnd < 50) then
-				picks = 1
-			elseif (rnd < 90) then
-				picks = 2
-			else
-				picks = 3
-			end
-		end		
-		if (bagsHit == 5) then
-			if (rnd < 20) then
-				picks = 0
-			elseif (rnd < 40) then
-				picks = 1
-			elseif (rnd < 60) then
-				picks = 2
-			elseif (rnd < 90) then
-				picks = 3
-			else
-				picks = 4
-			end
-		end		
-		if (bagsHit == 6) then
-			if (rnd < 20) then
-				picks = 0
-			elseif (rnd < 30) then
-				picks = 1
-			elseif (rnd < 50) then
-				picks = 2
-			elseif (rnd < 70) then
-				picks = 3
-			elseif (rnd < 90) then
-				picks = 4
-			else
-				picks = 5
-			end
-		end		
-		if (bagsHit == 7) then
-			if (rnd < 20) then
-				picks = 0
-			elseif (rnd < 30) then
-				picks = 1
-			elseif (rnd < 40) then
-				picks = 2
-			elseif (rnd < 60) then
-				picks = 3
-			elseif (rnd < 70) then
-				picks = 4
-			elseif (rnd < 90) then
-				picks = 5
-			else
-				picks = 6
-			end
-		end		
-		if (bagsHit == 8) then
-			if (rnd < 10) then
-				picks = 0
-			elseif (rnd < 20) then
-				picks = 1
-			elseif (rnd < 30) then
-				picks = 2
-			elseif (rnd < 40) then
-				picks = 3
-			elseif (rnd < 60) then
-				picks = 4
-			elseif (rnd < 70) then
-				picks = 5
-			elseif (rnd < 90) then
-				picks = 6
-			else
-				picks = 7
-			end
-		end		
-		if (bagsHit >= 9) then
-			if (rnd < 10) then
-				picks = 0
-			elseif (rnd < 20) then
-				picks = 1
-			elseif (rnd < 30) then
-				picks = 2
-			elseif (rnd < 40) then
-				picks = 3
-			elseif (rnd < 60) then
-				picks = 4
-			elseif (rnd < 70) then
-				picks = 5
-			elseif (rnd < 80) then
-				picks = 6
-			elseif (rnd < 90) then
-				picks = 7
-			else
-				picks = 8
-			end
-		end		
-		picks = picks+1
-		return picks*1000
-end
+-- function choosePrize(_bags)
+		-- if (bagsHit == 0) then
+			-- return 0
+		-- end		
+		-- local picks = 0
+		-- local rnd = math.random(0,100)
+		-- if (bagsHit == 1) then
+			-- picks = 0
+		-- end		
+		-- if (bagsHit == 2) then
+			-- if (rnd < 50) then
+				-- picks = 0
+			-- else
+				-- picks = 1
+			-- end
+		-- end				
+		-- if (bagsHit == 3) then
+			-- if (rnd < 50) then
+				-- picks = 0
+			-- elseif (rnd < 75) then
+				-- picks = 1
+			-- else
+				-- picks = 2
+			-- end
+		-- end		
+		-- if (bagsHit == 4) then
+			-- if (rnd < 30) then
+				-- picks = 0
+			-- elseif (rnd < 50) then
+				-- picks = 1
+			-- elseif (rnd < 90) then
+				-- picks = 2
+			-- else
+				-- picks = 3
+			-- end
+		-- end		
+		-- if (bagsHit == 5) then
+			-- if (rnd < 20) then
+				-- picks = 0
+			-- elseif (rnd < 40) then
+				-- picks = 1
+			-- elseif (rnd < 60) then
+				-- picks = 2
+			-- elseif (rnd < 90) then
+				-- picks = 3
+			-- else
+				-- picks = 4
+			-- end
+		-- end		
+		-- if (bagsHit == 6) then
+			-- if (rnd < 20) then
+				-- picks = 0
+			-- elseif (rnd < 30) then
+				-- picks = 1
+			-- elseif (rnd < 50) then
+				-- picks = 2
+			-- elseif (rnd < 70) then
+				-- picks = 3
+			-- elseif (rnd < 90) then
+				-- picks = 4
+			-- else
+				-- picks = 5
+			-- end
+		-- end		
+		-- if (bagsHit == 7) then
+			-- if (rnd < 20) then
+				-- picks = 0
+			-- elseif (rnd < 30) then
+				-- picks = 1
+			-- elseif (rnd < 40) then
+				-- picks = 2
+			-- elseif (rnd < 60) then
+				-- picks = 3
+			-- elseif (rnd < 70) then
+				-- picks = 4
+			-- elseif (rnd < 90) then
+				-- picks = 5
+			-- else
+				-- picks = 6
+			-- end
+		-- end		
+		-- if (bagsHit == 8) then
+			-- if (rnd < 10) then
+				-- picks = 0
+			-- elseif (rnd < 20) then
+				-- picks = 1
+			-- elseif (rnd < 30) then
+				-- picks = 2
+			-- elseif (rnd < 40) then
+				-- picks = 3
+			-- elseif (rnd < 60) then
+				-- picks = 4
+			-- elseif (rnd < 70) then
+				-- picks = 5
+			-- elseif (rnd < 90) then
+				-- picks = 6
+			-- else
+				-- picks = 7
+			-- end
+		-- end		
+		-- if (bagsHit >= 9) then
+			-- if (rnd < 10) then
+				-- picks = 0
+			-- elseif (rnd < 20) then
+				-- picks = 1
+			-- elseif (rnd < 30) then
+				-- picks = 2
+			-- elseif (rnd < 40) then
+				-- picks = 3
+			-- elseif (rnd < 60) then
+				-- picks = 4
+			-- elseif (rnd < 70) then
+				-- picks = 5
+			-- elseif (rnd < 80) then
+				-- picks = 6
+			-- elseif (rnd < 90) then
+				-- picks = 7
+			-- else
+				-- picks = 8
+			-- end
+		-- end		
+		-- picks = picks+1
+		-- return picks*1000
+-- end
 -----------------------------------------------------------------
 function roundOver()
 	logger.log("RoundOver,"..points)
@@ -647,35 +649,36 @@ function roundOver()
 	rowIndex = 0
 	yLocation = 180	
 	
-	if (bagsHit == 0) then
-		prize = 0
-	else
-		prize = choosePrize(bagsHit)
-	end
+	-- if (bagsHit == 0) then
+		-- prize = 0
+	-- else
+		-- prize = choosePrize(bagsHit)
+	-- end
 	
 	correctColor = math.random(1,#colors)
-	incorrectColor = math.random(1,#colors)
-	while (incorrectColor == correctColor) do
-		incorrectColor = math.random(1,#colors)
-	end
+	-- incorrectColor = math.random(1,#colors)
+	-- while (incorrectColor == correctColor) do
+		-- incorrectColor = math.random(1,#colors)
+	-- end
 	onTarget = false
 
 	
 
-	for x = 0,bagsHit-1 do
+	for x = 0,numBags-1 do
 		bagsHitImages[x] = display.newImage("bag.png")
 		bagsHitImages[x].x = 100 + 30*rowIndex
 		bagsHitImages[x].y = yLocation
 		bagsHitImages[x].touch = bagTouch
 		bagsHitImages[x]:addEventListener("touch")
 		bagsHitImages[x].id = x
+		
 		rowIndex = rowIndex + 1
 		if (rowIndex == 5) then
 			rowIndex = 0
 			yLocation = yLocation + 30
 		end
 	end
-		
+	bagsHitImages[0]:setFillColor(255,255,0)
 end
 -----------------------------------------------------------------
 function gameOver()
@@ -837,8 +840,6 @@ function bagHit()
 	updateMeters()
 	updateSaveState()
 	onTarget = false
-
-
 end
 -----------------------------------------------------------------
 function bagMissed()
