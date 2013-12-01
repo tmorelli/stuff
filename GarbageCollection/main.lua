@@ -36,7 +36,9 @@ level = 1
 mouseAxis = 0
 centerLine = 238
 activeControl = 3
-
+currentPoints = 0
+START_PRIZE = 10000
+pointDecrease = 100
 
 leftBorder = 86
 rightBorder = 390
@@ -756,6 +758,7 @@ function placeNextRightHouse()
 		if (rightHouses[x].y < 0) then
 			rightHouses[x].y = 0
 			rightBags[x].y = 15
+			currentPoints = START_PRIZE
 			break 
 		end
 	end
@@ -767,6 +770,7 @@ function placeNextLeftHouse()
 		if (leftHouses[x].y < 0) then
 			leftHouses[x].y = 0
 			leftBags[x].y = 15
+			currentPoints = START_PRIZE
 			break 
 		end
 	end
@@ -774,7 +778,8 @@ end
 -----------------------------------------------------------------
 function bagHit()
 	logger.log("BagHit")
-	points = points + 100 * level
+--	points = points + 100 * level
+	points = points + currentPoints
 	bagsHit = bagsHit + 1
 	local chingChannel = audio.play(chingSound)
 	updateMeters()
@@ -849,6 +854,10 @@ end
 function frameUpdate(event)
 	if (state == PLAYING) then
 		playUpdate()
+		currentPoints = currentPoints - pointDecrease
+		if (currentPoints < 0) then
+			currentPoints = 0
+		end
 	end
 end
 ---------------------------------------------------------------------------
