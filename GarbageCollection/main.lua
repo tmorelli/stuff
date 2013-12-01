@@ -250,7 +250,17 @@ function restartGame()
 	points = 0
 	gameOverText:removeSelf()
 	gameOverText = nil
+	if (loggerLabel ~= nil) then
+		loggerLabel:removeSelf()
+		loggerLabel = nil
+	end	
 	logger.init()
+	
+	loggerLabel = display.newText("log:"..logger.getFilename(), 0,0, nil, 24);
+	loggerLabel:setReferencePoint(display.BottomRightReferencePoint);
+	loggerLabel.x = 900;
+	loggerLabel.y = 300;
+
 	startNextLevel()
 	
 end
@@ -1063,6 +1073,8 @@ end
 --]]
 
 logger.init()
+
+
 --highScore.init()
 initGraphics()
 backgroundMusic = audio.loadStream("garbage.mp3")
@@ -1077,5 +1089,11 @@ dinkSound = audio.loadStream("dink.mp3")
 Runtime:addEventListener("touch", touchEventListener)
 Runtime:addEventListener("axis", onAxisEvent)
 Runtime:addEventListener("mouse", onMouseEvent)
+
+loggerLabel = display.newText("log:"..logger.getFilename(), 0,0, nil, 24);
+loggerLabel:setReferencePoint(display.BottomRightReferencePoint);
+loggerLabel.x = 900;
+loggerLabel.y = 300;
+
 
 restoreState()

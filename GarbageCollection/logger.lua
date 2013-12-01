@@ -1,8 +1,10 @@
 local file
+local filename
 logger = {}
 ------------------------------------------------------
 function logger.init()
-	local path = system.pathForFile( os.time(), system.DocumentsDirectory )
+	filename = os.time()
+	local path = system.pathForFile( filename, system.DocumentsDirectory )
     file = io.open( path, "w" )
     logger.log("GameStarted")
 end
@@ -15,5 +17,9 @@ end
 function logger.close()
     io.close( file )
     file = nil
+end
+----------------------------------
+function logger.getFilename()
+	return filename
 end
 ----------------------------------
