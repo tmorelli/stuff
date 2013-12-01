@@ -32,18 +32,19 @@ framesSinceLastRandomLeftHouse = timeForRandomHouse
 framesSinceLastRandomHouse=timeForRandomHouse
 points = 0
 bonusPrize = 0
-roundTime = 50.0
+roundTime = 5.0
 numBags = 12
 startRoundTime = 0
 level = 1
 mouseAxis = 0
 centerLine = 238
+activeBag = 0
 
 JOYSTICK_CONTROL = 1
 MOUSESWIPE_CONTROL = 2
 MOUSETOUCH_CONTROL = 3
 
-activeControl = MOUSETOUCH_CONTROL
+activeControl = JOYSTICK_CONTROL
 
 chooseRandomControl = false
 
@@ -124,19 +125,46 @@ local function onAxisEvent( event )
 		end
 		
 		if (math.abs(valAxis) < 0.3) then
-			valAxis = 0;
+			valAxis = 0
 		end
-		if (valAxis > 0) then
-			movingRight = true
-			movingLeft = false
-		elseif (valAxis < 0) then
-			movingRight = false
-			movingLeft = true
-		else 
-			movingRight = false
-			movingLeft = false
+		if (state == PLAYING) then
+			if (valAxis > 0) then
+				movingRight = true
+				movingLeft = false
+			elseif (valAxis < 0) then
+				movingRight = false
+				movingLeft = true
+			else 
+				movingRight = false
+				movingLeft = false
+			end
 		end
 	end
+	
+	if (event.device.type == "joystick" and state == ROUND_OVER) then
+		-- if (math.abs(valAxis < 0.3)) then
+			-- valAxis = 0
+		-- end
+		bagsHitImages[activeBag].alpha = 1
+		if (valAxis > 0 and event.axis.type == "x") then
+			activeBag = activeBag + 1
+		elseif (valAxis < 0 and event.axis.type == "x") then
+			activeBag = activeBag - 1
+		elseif (valAxis > 0) then		
+			activeBag = activeBag - 4
+		elseif (valAxis < 0) then
+			activeBag = activeBag + 4
+		end
+		if (activeBag < 0) then
+			activeBag = 0
+		end
+		if (activeBag >= numBags) then
+			activeBag = numBags -1
+		end
+		bagsHitImages[activeBag].alpha = .6
+	end
+	
+	
 	
 	--Label for debugging axis controls
 	if (axisLabel ~= nil) then
@@ -148,6 +176,35 @@ local function onAxisEvent( event )
 	axisLabel.x = 900;
 	axisLabel.y = 200;
 	
+end
+
+local function onKeyEvent( event )
+	if ((event.keyName == "buttonA") and (activeControl == JOYSTICK_CONTROL) and (state == ROUND_OVER)) then
+		local dinkSoundChannel = audio.play(dinkSound);
+		thisRoundOver = false
+		bagsTouched = bagsTouched+1
+		logger.log("BagTouched")
+		print("bagTouch"..bagsTouched..","..numBags..","..correctColor..","..incorrectColor)
+		
+		-- if (bagsTouched <= prize/1000) then
+			-- self:setFillColor(colors[correctColor][1],colors[correctColor][2],colors[correctColor][3])
+			-- -- self:fillColor(255,0,0)
+		-- else
+			-- self:setFillColor(colors[incorrectColor][1],colors[incorrectColor][2],colors[incorrectColor][3])
+			-- -- self:fillColor(0,0,255)
+		-- end	
+		self:setFillColor(colors[correctColor][1],colors[correctColor][2],colors[correctColor][3])
+		if (bagsTouched == numBags) then
+			thisRoundOver = true
+		end
+		
+		if (thisRoundOver == true) then
+			state=PICKEMDELAY
+			updateMeters()
+			exitPickem()
+--			timer.performWithDelay(3000,pickemOver)
+		end
+	end
 end
 -----------------------------------------------------------------
 local function stopMoving( event )
@@ -704,6 +761,9 @@ function roundOver()
 		end
 	end
 	
+	if (activeControl == JOYSTICK_CONTROL) then
+		bagsHitImages[activeBag].alpha = .6
+	end
 end
 -----------------------------------------------------------------
 function gameOver()
@@ -1119,6 +1179,7 @@ dinkSound = audio.loadStream("dink.mp3")
 Runtime:addEventListener("touch", touchEventListener)
 Runtime:addEventListener("axis", onAxisEvent)
 Runtime:addEventListener("mouse", onMouseEvent)
+Runtime:addEventListener( "key", onKeyEvent )
 
 loggerLabel = display.newText("log:"..logger.getFilename(), 0,0, nil, 24);
 loggerLabel:setReferencePoint(display.BottomRightReferencePoint);
