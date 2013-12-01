@@ -35,7 +35,14 @@ startRoundTime = 0
 level = 1
 mouseAxis = 0
 centerLine = 238
-activeControl = 3
+
+JOYSTICK_CONTROL = 1
+MOUSESWIPE_CONTROL = 2
+MOUSETOUCH_CONTROL = 3
+
+activeControl = MOUSE_TOUCH_CONTROL
+
+
 currentPoints = 0
 START_PRIZE = 10000
 pointDecrease = 100
@@ -89,7 +96,7 @@ local function onAxisEvent( event )
 			return
 		end
 		
-		if (activeControl ~= 1) then
+		if (activeControl ~= JOYSTICK_CONTROL) then
 			return
 		end
 		
@@ -131,7 +138,7 @@ local function onMouseEvent( event )
 		return
 	end
 	
-	if (activeControl ~= 2) then
+	if (activeControl ~= MOUSESWIPE_CONTROL) then
 		return
 	end
 	
@@ -178,7 +185,7 @@ function touchEventListener(event )
 		return
 	end
 	
-	if (activeControl ~= 3) then
+	if (activeControl ~= MOUSETOUCH_CONTROL) then
 		return
 	end
 
