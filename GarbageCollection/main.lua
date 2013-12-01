@@ -20,7 +20,7 @@ movingLeft = false
 laneMarkers = {}
 numLaneMarkers = 20
 numHouses = 20
-numBags = 20
+numBags = 15
 laneFrameIndex = 0
 leftHouses = {}
 rightHouses = {}
@@ -33,7 +33,6 @@ framesSinceLastRandomHouse=timeForRandomHouse
 points = 0
 bonusPrize = 0
 roundTime = 5.0
-numBags = 12
 startRoundTime = 0
 level = 1
 mouseAxis = 0
@@ -180,30 +179,7 @@ end
 
 local function onKeyEvent( event )
 	if ((event.keyName == "buttonA") and (activeControl == JOYSTICK_CONTROL) and (state == ROUND_OVER)) then
-		local dinkSoundChannel = audio.play(dinkSound);
-		thisRoundOver = false
-		bagsTouched = bagsTouched+1
-		logger.log("BagTouched")
-		print("bagTouch"..bagsTouched..","..numBags..","..correctColor..","..incorrectColor)
-		
-		-- if (bagsTouched <= prize/1000) then
-			-- self:setFillColor(colors[correctColor][1],colors[correctColor][2],colors[correctColor][3])
-			-- -- self:fillColor(255,0,0)
-		-- else
-			-- self:setFillColor(colors[incorrectColor][1],colors[incorrectColor][2],colors[incorrectColor][3])
-			-- -- self:fillColor(0,0,255)
-		-- end	
-		self:setFillColor(colors[correctColor][1],colors[correctColor][2],colors[correctColor][3])
-		if (bagsTouched == numBags) then
-			thisRoundOver = true
-		end
-		
-		if (thisRoundOver == true) then
-			state=PICKEMDELAY
-			updateMeters()
-			exitPickem()
---			timer.performWithDelay(3000,pickemOver)
-		end
+		bagTouch(bagsHitImages[activeBag], nil)
 	end
 end
 -----------------------------------------------------------------
@@ -504,7 +480,7 @@ function bagTouch(self,event)
 		correctColor = {255,0,0}
 --]]
 
-	if (event.phase == "began" and state ~= PICKEMDELAY) then
+	if ((event.phase == "began" and state ~= PICKEMDELAY) or event == nil ) then
 	
 		if (self.selectable == true) then
 			self.selectable = false
@@ -735,7 +711,7 @@ function roundOver()
 	bonusPrize = 0
 	totalBonusWin = 0
 	currentBonusValue = BONUS_START_VALUE
-	for x = 0,15 do
+	for x = 0,numBags do
 		bagsHitImages[x] = display.newImage("bag.png")
 		bagsHitImages[x].x = 100 + 30*rowIndex
 		bagsHitImages[x].y = yLocation
@@ -753,7 +729,7 @@ function roundOver()
 	end
 	local totalRandomBagsChosen = 0
 	while (totalRandomBagsChosen < 5) do
-		local rnd = math.random(0,15)
+		local rnd = math.random(0,numBags)
 		if (bagsHitImages[rnd].selectable == false) then
 			bagsHitImages[rnd]:setFillColor(colors[2][1],colors[2][2],colors[2][3])
 			totalRandomBagsChosen = totalRandomBagsChosen + 1
