@@ -353,7 +353,7 @@ function startNextLevel()
 	end
 	totalMisses = 0
 
-	timeForRandomHouse = 100
+
 	framesSinceLastRandomRightHouse = timeForRandomHouse
 	framesSinceLastRandomLeftHouse = timeForRandomHouse
 	framesSinceLastRandomHouse = timeForRandomHouse
