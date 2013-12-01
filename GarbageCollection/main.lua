@@ -453,7 +453,7 @@ function bagTouch(self,event)
 			self.selectable = false
 			local dinkSoundChannel = audio.play(dinkSound);
 			thisRoundOver = false
-			logger.log("BagTouched")
+			logger.log("BagTouched,"..self.id)
 			print("bagTouch"..bagsTouched..","..numBags..","..correctColor..","..incorrectColor)
 		
 			self:setFillColor(255,255,255)
@@ -470,7 +470,7 @@ function bagTouch(self,event)
 --			timer.performWithDelay(3000,pickemOver)
 			end
 		else
-			logger.log("BonnusBagNotEnabled")
+			logger.log("BonnusBagNotEnabled,"..self.id)
 		end
 
 --[[	
