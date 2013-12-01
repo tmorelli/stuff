@@ -42,6 +42,21 @@ MOUSETOUCH_CONTROL = 3
 
 activeControl = MOUSE_TOUCH_CONTROL
 
+chooseRandomControl = true
+
+if (chooseRandomControl == true) then
+	controlLevel1 = math.random(1,3)
+	controlLevel2 = math.random(1,3)
+	controlLevel3 = math.random(1,3)
+	while (controlLevel2 == controlLevel1) do
+		controlLevel2 = math.random(1,3)
+	end
+	while ((controlLevel3 == controlLevel2) or (controlLevel3 == controlLevel1)) do
+		controlLevel3 = math.random(1,3)
+	end
+	activeControl = controlLevel1
+end
+
 
 currentPoints = 0
 START_PRIZE = 10000
@@ -322,7 +337,16 @@ function startNextLevel()
 	timeForRandomHouse = 100
 	framesSinceLastRandomRightHouse = timeForRandomHouse
 	framesSinceLastRandomLeftHouse = timeForRandomHouse
-	speed = 3+1.5*level
+--	speed = 3+1.5*level
+
+	if (chooseRandomControl == true) then
+		if (level == 2) then
+			activeControl = controlLevel2
+		elseif (level == 3) then
+			activeControl = controlLevel3
+		end
+	end
+
 	currentLevelSpeed = speed
 	movingRight = false
 	movingLeft = false
@@ -387,7 +411,11 @@ function pickemOver()
 		bagsHitImages[x] = nil
 	end
 	
-	startNextLevel()
+	if (level == 3) then
+		gameOver()
+	else
+		startNextLevel()
+	end
 end
 -----------------------------------------------------------------
 
@@ -807,9 +835,9 @@ function bagMissed()
 		missedBags[totalMisses]:setFillColor(255,0,0) 
 		totalMisses = totalMisses+1
 	end
-	if (totalMisses >= maxMisses) then
-		gameOver()
-	end
+--	if (totalMisses >= maxMisses) then
+--		gameOver()
+--	end
 	updateMeters()
 	updateSaveState()
 end
