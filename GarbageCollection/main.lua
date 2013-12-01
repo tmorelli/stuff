@@ -26,11 +26,12 @@ leftHouses = {}
 rightHouses = {}
 rightBags = {}
 leftBags = {}
-timeForRandomHouse = 100
+timeForRandomHouse = 150
 framesSinceLastRandomRightHouse = timeForRandomHouse
 framesSinceLastRandomLeftHouse = timeForRandomHouse
+framesSinceLastRandomHouse=timeForRandomHouse
 points = 0
-roundTime = 30.0
+roundTime = 50.0
 startRoundTime = 0
 level = 1
 mouseAxis = 0
@@ -327,6 +328,7 @@ end
 function startNextLevel()
 	level = level + 1
 	levelLabel.text = "Level: "..level
+	
 	bagsHit = 0
 	for x = 0,maxMisses-1 do
 		missedBags[x]:setFillColor(128,128,128)
@@ -337,6 +339,7 @@ function startNextLevel()
 	timeForRandomHouse = 100
 	framesSinceLastRandomRightHouse = timeForRandomHouse
 	framesSinceLastRandomLeftHouse = timeForRandomHouse
+	framesSinceLastRandomHouse = timeForRandomHouse
 --	speed = 3+1.5*level
 
 	if (chooseRandomControl == true) then
@@ -345,6 +348,7 @@ function startNextLevel()
 		elseif (level == 3) then
 			activeControl = controlLevel3
 		end
+		logger.log("LevelStart"..level..",activeControl,"..activeControl)
 	end
 
 	currentLevelSpeed = speed
@@ -852,6 +856,7 @@ function checkCollisions()
 			elseif (leftBags[x].y >= 0 ) then
 				if(onTarget == false) then
 					awardPoints = currentPoints
+					logger.log("OnTargetLeft,"..awardPoints)
 				end
 				onTarget = true
 				stillOnTarget = true
@@ -865,6 +870,7 @@ function checkCollisions()
 			elseif (rightBags[x].y >= 0 ) then
 				if(onTarget == false) then
 					awardPoints = currentPoints
+					logger.log("OnTargetRight,"..awardPoints)
 				end
 				onTarget = true
 				stillOnTarget = true
@@ -872,6 +878,9 @@ function checkCollisions()
 		end
 	end
 	if (stillOnTarget == false) then
+		if (onTarget == true) then
+			logger.log("OffTarget")
+		end
 		onTarget = false
 	end
 end
@@ -890,8 +899,21 @@ function playUpdate()
 	updateLaneMarkerLocations()
 	updateHouses()
 	updateBags()
+	
+	framesSinceLastRandomHouse = framesSinceLastRandomHouse + 1
+	if (framesSinceLastRandomHouse > timeForRandomHouse) then
+		if (math.random(0,1) == 0) then
+			placeNextRightHouse()
+			framesSinceLastRandomHouse	= 0	
+		else
+			placeNextLeftHouse()
+			framesSinceLastRandomHouse	= 0	
+		end
+	
+	end
+--[[
 	framesSinceLastRandomRightHouse = framesSinceLastRandomRightHouse + 1
-	framesSinceLastRandomLeftHouse = framesSinceLastRandomLeftHouse + 1
+	framesSinceLastRandomLeftHouse = framesSinceLastRandomLeftHouse + 1	
 	if (framesSinceLastRandomRightHouse > timeForRandomHouse) then
 		if (math.random(0,100) == 0) then
 			placeNextRightHouse()
@@ -904,6 +926,7 @@ function playUpdate()
 			framesSinceLastRandomLeftHouse = 0
 		end	
 	end
+--]]
 	checkCollisions()
 	updateMeters()
 end
