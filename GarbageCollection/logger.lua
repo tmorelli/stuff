@@ -10,7 +10,7 @@ function logger.init()
 end
 ------------------------------------------------------
 function logger.log(event)
-    file:write( os.time()..","..event.."\n" )
+    file:write( os.time()..","..system.getTimer()..","..event.."\n" )
     io.flush()
 end
 ----------------------------------
