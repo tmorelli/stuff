@@ -253,38 +253,8 @@ local function onMouseEvent( event )
 		swiping = true
 		swipeX = event.x
 		swipeY = event.y
-		
---[[		
-		bagsHitImages[activeBag].alpha = 1
-		if (event.x > mouseX) then
-			activeBag = activeBag + 1
-			mouseX = event.x
-		elseif (event.x < mouseX) then
-			activeBag = activeBag - 1
-			mouseX = event.x
-		elseif (event.y > mouseY) then		
-			activeBag = activeBag + 4
-			mouseY = event.y
-		elseif (event.y < mouseY) then
-			activeBag = activeBag - 4
-			mouseY = event.y
-		end
-	--]]
 		swipeTimer = timer.performWithDelay(100, stopSwiping)
-
-		
---[[		
-		if (activeBag < 0) then
-			activeBag = 0
-		end
-		if (activeBag > numBags) then
-			activeBag = numBags
-		end
-		bagsHitImages[activeBag].alpha = .6
-		
---]]		
 	end
-
 	timer.performWithDelay(50, stopMoving)
 end
 
@@ -524,6 +494,8 @@ end
 -----------------------------------------------------------------
 function pickemOver()
 	timer.cancel(pickemPrizeTimer)
+	
+	activeBag = 0
 
 	roundOverText:removeSelf()
 	roundOverText = nil
@@ -556,7 +528,7 @@ function bagTouch(self,event)
 		correctColor = {255,0,0}
 --]]
 
-	if ((event.phase == "began" and state ~= PICKEMDELAY) or event.name == "key" ) then
+	if ((event.phase == "began" or event.keyName == "buttonA") and state ~= PICKEM_DELAY ) then
 	
 		if (self.selectable == true) then
 			self.selectable = false
@@ -574,7 +546,7 @@ function bagTouch(self,event)
 			if (thisRoundOver == true) then
 				logger.log("Total bonus: "..totalBonusWin)
 				points = points+totalBonusWin
-				state=PICKEMDELAY
+				state=PICKEM_DELAY
 				updateMeters()
 				exitPickem()
 --			timer.performWithDelay(3000,pickemOver)
@@ -605,7 +577,7 @@ function bagTouch(self,event)
 		end
 		if (bagsTouched == 3 or bagsTouched >= bagsHit) then
 			points = points+prize
-			state=PICKEMDELAY
+			state=PICKEM_DELAY
 			updateMeters()
 			timer.performWithDelay(1000,pickemOver)
 		end
@@ -851,7 +823,7 @@ function updateMeters()
 	end
 	
 	timeLabel.text = "Time: "..timeLeft
-	if (timeLeft == 0 and state ~=PICKEMDELAY and state ~= GAME_OVER) then
+	if (timeLeft == 0 and state ~=PICKEM_DELAY and state ~= GAME_OVER) then
 		roundOver()
 	end
 	--[[highScore.update(points)
