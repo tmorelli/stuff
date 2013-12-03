@@ -233,6 +233,7 @@ sub getSearchTimes(){
   for ($x = 0; $x < 3; $x ++ )
   { 
     my $total = 0;
+    my $speedTotal = 0;
     for ($y = 0; $y < 5; $y++)
     {
       $total += $timeToSearch[$x][$y];
@@ -240,9 +241,11 @@ sub getSearchTimes(){
       if ($y>0){
         print($distanceToSearch[$x][$y].",");
         print(($distanceToSearch[$x][$y]/$timeToSearch[$x][$y]).",");
+        $speedTotal += $distanceToSearch[$x][$y]/$timeToSearch[$x][$y];
       }
     }
     print (($total/5).",");
+    print (($speedTotal/4).",");
   }
 }
 ###############################################################
