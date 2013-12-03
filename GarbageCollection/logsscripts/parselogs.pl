@@ -2,6 +2,8 @@
 #The output is
 #Ctrl1AvgSeekTime,Ctrl1AvgSeekTimeNo0,Ctrl1SeekNo0Count,Ctrl1Search1..5Time,Ctrl1Search1...5Distance
 
+use POSIX ();
+use Math::Complex;
 
 #$filename='1385993701';
 $filename=$ARGV[0];
@@ -61,6 +63,12 @@ sub getControlSequence(){
     }
 
   }
+}
+###############################################################
+sub getBagIndexFromLine{
+  my $loc = rindex($_,',')+1;
+  my $idx = substr($_,$loc,10);
+  return $idx; 
 }
 ###############################################################
 sub getMillisFromLine{
@@ -148,10 +156,99 @@ sub getSeekTimes(){
     }
     print($avgSeekTimeCorrect.",".$avgSeekTimeNon0.",".$missedCount[$x].",".$correctCount[$x].",".$correctCountNon0[$x].",");
   }
-  print ("\n");
+}
+###############################################################
+sub calculateDistance{
+  #picks are in a 4x4 grid with 1,2,3,4 in the top row
+  #distance between each bag is 30 horizontal and 30 vertical
+  #When given two bags, need to calculate the number of
+  #horizontal grid moves and the number of vertical grid moves
+  #then multiply by 30
+  #Then find the direct line distance.  
+
+  #first calculate row,col for a point1 and point2
+
+  my $pt1 = @_[0]-1;
+  my $pt2 = @_[1]-1;
+  my $row1 = POSIX::floor($pt1/4);
+  my $col1 = $pt1%4;
+
+  my $row2 = POSIX::floor($pt2/4);
+  my $col2 = $pt2%4;
+  my $rowChange = $row1-$row2;
+  if ($rowChange < 0) {
+    $rowChange *=-1;
+  }
+  my $colChange = $col1-$col2;
+  if ($colChange < 0) {
+    $colChange *=-1;
+  }
+  my $distance = sqrt(($colChange*30)*($colChange*30)+($rowChange*30)*($rowChange*30));  
+
+#  print ("Point1: $pt1-$row1,$col1\n");
+#  print ("Point2: $pt2-$row2,$col2\n");
+#  print ("$distance\n\n");
+  return $distance;
+  
+}
+###############################################################
+sub getSearchTimes(){
+  #times between PlaceNext and OnTarget or BagMissed
+  #also need to look for control type switching
+#  print ("ControlType: $ctrl[$ctrlIndex]\n");
+  my $bagIndex = 0;
+  my $bagLocation = -1;
+  my $oldBagLocation = -1;
+  $ctrlIndex = 0;
+  $timeToSearch[$ctrl[$ctrlIndex]-1][$bagIndex]=0;
+  $distanceToSearch[$ctrl[$ctrlIndex]-1][$bagIndex]=0;
+  
+
+  $handledHouse = true;
+  open (MYFILE, $filename);
+  while (<MYFILE>) {
+    chomp;
+    if (index($_,"RoundOver") > 1){
+      $time = getMillisFromLine($_);
+    }
+    elsif (index($_,"BagTouched") > 1){
+      $startTime = $time;
+      $time = getMillisFromLine($_);
+      $oldBagLocation = $bagLocation;
+      $bagLocation = getBagIndexFromLine($_);
+      if ($bagIndex > 0) {
+         my $distance = calculateDistance($oldBagLocation,$bagLocation);
+         $distanceToSearch[$ctrl[$ctrlIndex]-1][$bagIndex]=$distance;
+      }
+      my $diff = $time-$startTime;
+      $timeToSearch[$ctrl[$ctrlIndex]-1][$bagIndex]=$diff;
+      $bagIndex++;
+    }
+    elsif (index($_,"activeControl") > 1){
+      $ctrlIndex++;
+      $bagIndex = 0;
+    }
+  }
+  close (MYFILE);
+  for ($x = 0; $x < 3; $x ++ )
+  { 
+    my $total = 0;
+    for ($y = 0; $y < 5; $y++)
+    {
+      $total += $timeToSearch[$x][$y];
+      print($timeToSearch[$x][$y].",");
+      if ($y>0){
+        print($distanceToSearch[$x][$y].",");
+        print(($distanceToSearch[$x][$y]/$timeToSearch[$x][$y]).",");
+      }
+    }
+    print (($total/5).",");
+  }
 }
 ###############################################################
 
-
 getControlSequence();
-getSeekTimes();
+getSeekTimes();    #how long to make the truck find the target
+getSearchTimes();  #how long to choose a correct bag in the bonus
+
+print("\n");
