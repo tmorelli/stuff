@@ -837,7 +837,6 @@ function updateMeters()
 	highScoreLabel.x = 320;
 	highScoreLabel.y = 80;
 	]]--
-
 end
 -----------------------------------------------------------------
 function initMeters()
