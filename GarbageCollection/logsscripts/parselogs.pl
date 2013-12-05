@@ -149,10 +149,10 @@ sub getSeekTimes(){
       $avgSeekTimeCorrect = 0;
     }
     if ($correctCountNon0[$x] > 0){
-      $avgSeekTimeNon0 = $totalSeekTimeNon0[$x]/$correctCountNon0[$x];
+      $avgSeekTimeNon0 = ($totalSeekTimeNon0[$x]+5000*$missedCount[$x])/($correctCountNon0[$x]+$missedCount[$x]);
     }
     else{
-      $avgSeekTimeNon0 = 0;
+      $avgSeekTimeNon0 = 5000;
     }
     print($avgSeekTimeCorrect.",".$avgSeekTimeNon0.",".$missedCount[$x].",".$correctCount[$x].",".$correctCountNon0[$x].",");
   }
