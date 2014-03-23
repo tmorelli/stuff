@@ -4,14 +4,9 @@
 --
 -----------------------------------------------------------------------------------------
 
--- Your code here
-
-
-
- require("logger")
+require("logger")
 json = require("json")
 
-display.setStatusBar( display.HiddenStatusBar )
 truckHorizontalSpeed = 5
 speed = 5
 currentLevelSpeed = speed
@@ -40,36 +35,32 @@ mouseY = 0
 centerLine = 238
 activeBag = 0
 
-JOYSTICK_CONTROL = 1
-MOUSESWIPE_CONTROL = 2
-MOUSETOUCH_CONTROL = 3
+OUYA = 1
+DS4OUYA = 2
+DS4NORM = 3
 
---activeControl = JOYSTICK_CONTROL
-activeControl = MOUSESWIPE_CONTROL
+SWIPE_SCHEME = 1
+TOUCH_SCHEME = 2
+
+activeScheme = SWIPE_SCHEME
 
 chooseRandomControl = true
 swiping = false
 swipeTimer = nil
 swipeThreshold = 50
 
-if (chooseRandomControl == true) then
-	controlLevel1 = math.random(1,3)
-	controlLevel2 = math.random(1,3)
-	controlLevel3 = math.random(1,3)
-	while (controlLevel2 == controlLevel1) do
-		controlLevel2 = math.random(1,3)
+if (chooseRandomController == true) then
+	controller1 = math.random(1,3)
+	controller2 = math.random(1,3)
+	controller3 = math.random(1,3)
+	while (controller2 == controller1) do
+		controller2 = math.random(1,3)
 	end
-	while ((controlLevel3 == controlLevel2) or (controlLevel3 == controlLevel1)) do
-		controlLevel3 = math.random(1,3)
+	while ((controller3 == controller2) or (controller3 == controller1)) do
+		controller3 = math.random(1,3)
 	end
-	activeControl = controlLevel1
+	activeController = controller1
 end
-
-instructionsLine1 = nil
-instructionsLine2 = nil
-instructionsLine3 = nil
-instructionsLine4 = nil
-
 
 currentPoints = 0
 START_PRIZE = 10000
@@ -79,13 +70,10 @@ currentBonusValue = 0
 totalBonusWin = 0
 BONUS_START_VALUE = 25000
 
-
-
 leftBorder = 86
 rightBorder = 390
 
 bagsHit = 0
-
 truckY = 600
 
 correctColor = 0
@@ -93,14 +81,12 @@ incorrectColor = 0
 
 colors = {{255,0,0},{0,255,0},{0,0,255}}
 
-
 bagsHitImages = {}
 
 maxMisses = 5
 missedBags = {}
 totalMisses = 0
 roundOverText = nil
-
 
 PLAYING = 0
 ROUND_OVER = 1
@@ -112,75 +98,6 @@ state = PLAYING
 
 saveState = {}
 
------------------------------------------------------------------
-local function onAxisEvent( event )
-	
-	if (activeControl ~= JOYSTICK_CONTROL) then
-		return
-	end
-	
-	if (state == GAME_OVER) then
-		restartGame()
-		return
-	end
-	
-	local valAxis = event.normalizedValue
-	
-	if (math.abs(valAxis) < 0.3) then
-		valAxis = 0
-	end
-	
-	--Joystick controls
-	if (event.device.type == "joystick" and event.axis.type == "x") then
-		if (splashShown == true) then
-			exitSplash()
-			return
-		end
-		if (state == PLAYING) then
-			if (valAxis > 0) then
-				movingRight = true
-				movingLeft = false
-			elseif (valAxis < 0) then
-				movingRight = false
-				movingLeft = true
-			else 
-				movingRight = false
-				movingLeft = false
-			end
-		end
-	end
-	
-	if (math.abs(valAxis) < 1) then
-		valAxis = 0
-	end
-	
-	if (event.device.type == "joystick" and state == ROUND_OVER) then
-		bagsHitImages[activeBag].alpha = 1
-		if (valAxis > 0 and event.axis.type == "x") then
-			activeBag = activeBag + 1
-		elseif (valAxis < 0 and event.axis.type == "x") then
-			activeBag = activeBag - 1
-		elseif (valAxis > 0) then		
-			activeBag = activeBag + 4
-		elseif (valAxis < 0) then
-			activeBag = activeBag - 4
-		end
-		if (activeBag < 0) then
-			activeBag = 0
-		end
-		if (activeBag > numBags) then
-			activeBag = numBags
-		end
-		bagsHitImages[activeBag].alpha = .6
-	end
-end
-
-local function onKeyEvent( event )
-	if (event.keyName == "buttonA" and activeControl == JOYSTICK_CONTROL and state == ROUND_OVER) then
-		bagTouch(bagsHitImages[activeBag],event)
-	end
-end
------------------------------------------------------------------
 local function stopMoving( event )
     movingRight = false
 	movingLeft = false
@@ -215,7 +132,7 @@ local function onMouseEvent( event )
 		return
 	end
 	
-	if (activeControl ~= MOUSESWIPE_CONTROL) then
+	if (activeScheme ~= SWIPE_SCHEME) then
 		return
 	end
 
@@ -239,6 +156,7 @@ local function onMouseEvent( event )
 			movingLeft = false
 		end
 	end
+	
 	-- Touchpad swipe bonus round controls
 	if (state == ROUND_OVER) then
 		if (swipeTimer ~= nil) then
@@ -270,12 +188,12 @@ function touchEventListener(event)
 		return
 	end
 	
-	if (activeControl == MOUSESWIPE_CONTROL and state == ROUND_OVER) then
+	if (activeScheme == SWIPE_SCHEME and state == ROUND_OVER) then
 		bagTouch(bagsHitImages[activeBag],event)
 	end
 	
 	
-	if (activeControl ~= MOUSETOUCH_CONTROL) then
+	if (activeScheme ~= TOUCH_SCHEME) then
 		return
 	end
 
@@ -309,16 +227,16 @@ end
 -----------------------------------------------------------------
 function restartGame()
 	if (chooseRandomControl == true) then
-		controlLevel1 = math.random(1,3)
-		controlLevel2 = math.random(1,3)
-		controlLevel3 = math.random(1,3)
-		while (controlLevel2 == controlLevel1) do
-			controlLevel2 = math.random(1,3)
+		controller1 = math.random(1,3)
+		controller2 = math.random(1,3)
+		controller3 = math.random(1,3)
+		while (controller2 == controller1) do
+			controller2 = math.random(1,3)
 		end
-		while ((controlLevel3 == controlLevel2) or (controlLevel3 == controlLevel1)) do
-			controlLevel3 = math.random(1,3)
+		while ((controller3 == controller2) or (controller3 == controller1)) do
+			controller3 = math.random(1,3)
 		end
-		activeControl = controlLevel1
+		activeScheme = controller1
 	end
 	level = 0
 	points = 0
@@ -419,11 +337,11 @@ function initNextLevel()
 
 	if (chooseRandomControl == true) then
 		if (level == 2) then
-			activeControl = controlLevel2
+			activeScheme = controller2
 		elseif (level == 3) then
-			activeControl = controlLevel3
+			activeScheme = controller3
 		end
-		logger.log("LevelStart"..level..",activeControl,"..activeControl)
+		logger.log("LevelStart"..level..",activeScheme,"..activeScheme)
 	end
 
 	displayInstructions()
@@ -586,7 +504,7 @@ function roundOver()
 		bagsHitImages[x] = display.newImage("bag.png")
 		bagsHitImages[x].x = 100 + 30*rowIndex
 		bagsHitImages[x].y = yLocation
-		if (activeControl == MOUSETOUCH_CONTROL) then
+		if (activeScheme == TOUCH_SCHEME) then
 			bagsHitImages[x].touch = bagTouch
 			bagsHitImages[x]:addEventListener("touch")
 		end
@@ -610,7 +528,7 @@ function roundOver()
 		end
 	end
 	
-	if (activeControl == JOYSTICK_CONTROL or activeControl == MOUSESWIPE_CONTROL) then
+	if (activeScheme == JOYSTICK_CONTROL or activeScheme == SWIPE_SCHEME) then
 		bagsHitImages[activeBag].alpha = .6
 	end
 end
@@ -653,7 +571,6 @@ function updateMeters()
 end
 -----------------------------------------------------------------
 function initMeters()
-	meterPanel = display.newImage("meter.png")
 	pointLabel = display.newText("Points: "..points, 0,0, nil, 24);
 	pointLabel.anchorX = 1
 	pointLabel.anchorY = 1
@@ -930,11 +847,8 @@ end
 
 logger.init()
 
-
-
 initGraphics()
 backgroundMusic = audio.loadStream("garbage.mp3")
-
 
 pooperSound = audio.loadStream("pooper.mp3")
 pickemExitSound = audio.loadStream("pickemexit.mp3")
