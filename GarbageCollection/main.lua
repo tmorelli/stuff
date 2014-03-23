@@ -334,7 +334,9 @@ function restartGame()
 	logger.init()
 	
 	loggerLabel = display.newText("log:"..logger.getFilename(), 0,0, nil, 24);
-	loggerLabel:setReferencePoint(display.BottomRightReferencePoint);
+	loggerLabel.anchorX = 1;
+	loggerLabel.anchorY = 1;
+	--loggerLabel:setReferencePoint(display.BottomRightReferencePoint);
 	loggerLabel.x = 900;
 	loggerLabel.y = 300;	
 
@@ -727,17 +729,23 @@ function roundOver()
 	speed = 0
 	bagsTouched = 0
 	roundOverText = display.newText("Round Over", 0,0, nil, 24);
-	roundOverText:setReferencePoint(display.TopLeftReferencePoint);
+	roundOverText.anchorX = 0;
+	roundOverText.anchorY = 0;
+	--roundOverText:setReferencePoint(display.TopLeftReferencePoint);
 	roundOverText.x = 90;
 	roundOverText.y = 80;
 		
 	roundOverInstruction = display.newText("Touch Bags To Reveal Color!", 0,0, nil, 18);
-	roundOverInstruction:setReferencePoint(display.TopLeftReferencePoint);
+	roundOverInstruction.anchorX = 0
+	roundOverInstruction.anchorY = 0
+	--roundOverInstruction:setReferencePoint(display.TopLeftReferencePoint);
 	roundOverInstruction.x = 40;
 	roundOverInstruction.y = 120;
 
 	roundOverInstruction2 = display.newText("Pick Until Color Changes", 0,0, nil, 18);
-	roundOverInstruction2:setReferencePoint(display.TopLeftReferencePoint);
+	roundOverInstruction2.anchorX = 0
+	roundOverInstruction2.anchorY = 0
+	--roundOverInstruction2:setReferencePoint(display.TopLeftReferencePoint);
 	roundOverInstruction2.x = 55;
 	roundOverInstruction2.y = 140;
 		
@@ -799,7 +807,9 @@ function gameOver()
 	state = GAME_OVER
 	speed = 0
 	gameOverText = display.newText("Game Over", 0,0, nil, 24);
-	gameOverText:setReferencePoint(display.TopLeftReferencePoint);
+	gameOverText.anchorX = 0
+	gameOverText.anchorY = 0
+	--gameOverText:setReferencePoint(display.TopLeftReferencePoint);
 	gameOverText.x = 90;
 	gameOverText.y = 80;
 	onTarget = false
@@ -813,7 +823,9 @@ function updateMeters()
 		pointLabel = nil
 	end
 	pointLabel = display.newText("Points: "..points, 0,0, nil, 24);
-	pointLabel:setReferencePoint(display.BottomRightReferencePoint);
+	pointLabel.anchorX = 1
+	pointLabel.anchorY = 1
+	--pointLabel:setReferencePoint(display.BottomRightReferencePoint);
 	pointLabel.x = 320;
 	pointLabel.y = 40;
 
@@ -842,7 +854,9 @@ end
 function initMeters()
 	meterPanel = display.newImage("meter.png")
 	pointLabel = display.newText("Points: "..points, 0,0, nil, 24);
-	pointLabel:setReferencePoint(display.BottomRightReferencePoint);
+	--pointLabel:setReferencePoint(display.BottomRightReferencePoint);
+	pointLabel.anchorX = 1
+	pointLabel.anchorY = 1
 	pointLabel.x = 320;
 	pointLabel.y = 40;
 
@@ -853,12 +867,16 @@ function initMeters()
 	]]--
 
 	timeLabel = display.newText("Time: "..points, 0,0, nil, 24);
-	timeLabel:setReferencePoint(display.BottomLeftReferencePoint);
+	timeLabel.anchorX = 1
+	timeLabel.anchorY = 1
+	--timeLabel:setReferencePoint(display.BottomLeftReferencePoint);
 	timeLabel.x = 20;
 	timeLabel.y = 40;
 
 	levelLabel = display.newText("Level: "..level, 0,0, nil, 18);
-	levelLabel:setReferencePoint(display.BottomRightReferencePoint);
+	levelLabel.anchorX = 1
+	levelLabel.anchorY = 1
+	--levelLabel:setReferencePoint(display.BottomRightReferencePoint);
 	levelLabel.x = 480;
 	levelLabel.y = truckY+50;
 
@@ -1183,13 +1201,13 @@ function displayInstructions()
 	end
 	
 	instructionsLine1 = display.newText(line1, 500,10, nil, 18);
-	instructionsLine1:setReferencePoint(display.TopLeftReferencePoint);
+	--instructionsLine1:setReferencePoint(display.TopLeftReferencePoint);
 	instructionsLine2 = display.newText(line2, 500,30, nil, 18);
-	instructionsLine2:setReferencePoint(display.TopLeftReferencePoint);
+	--instructionsLine2:setReferencePoint(display.TopLeftReferencePoint);
 	instructionsLine3 = display.newText(line3, 500,50, nil, 18);
-	instructionsLine3:setReferencePoint(display.TopLeftReferencePoint);
+	--instructionsLine3:setReferencePoint(display.TopLeftReferencePoint);
 	instructionsLine4 = display.newText(line4, 500,70, nil, 18);
-	instructionsLine4:setReferencePoint(display.TopLeftReferencePoint);
+	--instructionsLine4:setReferencePoint(display.TopLeftReferencePoint);
 
 	
 	
@@ -1270,7 +1288,9 @@ Runtime:addEventListener("mouse", onMouseEvent)
 Runtime:addEventListener( "key", onKeyEvent )
 
 loggerLabel = display.newText("log:"..logger.getFilename(), 0,0, nil, 24);
-loggerLabel:setReferencePoint(display.BottomRightReferencePoint);
+loggerLabel.anchorX = 1
+loggerLabel.anchorY = 1
+--loggerLabel:setReferencePoint(display.BottomRightReferencePoint);
 loggerLabel.x = 900;
 loggerLabel.y = 300;
 displayInstructions()
