@@ -884,6 +884,8 @@ end
 -----------------------------------------------------------------
 function initGraphics()
 	background = display.newImage("background.png",0,0)
+	background.anchorX = 0
+	background.anchorY = 0
 	initLaneMarkers()
 	initHouses()
 	initBags()
@@ -1194,7 +1196,7 @@ function displayInstructions()
 		line4 = "Tap touchpad to start"
 	end
 	if (activeControl == MOUSETOUCH_CONTROL) then
-		line1 = "Move truck by moving cursor to a side then pressing touchpad"
+		liFne1 = "Move truck by moving cursor to a side then pressing touchpad"
 		line2 = "In Bonus, move cursor to bag"
 		line3 = "In Bonus, press touchpad to select green bag"
 		line4 = "Tap touchpad to start"
