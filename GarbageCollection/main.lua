@@ -856,9 +856,7 @@ pickemExitSound = audio.loadStream("pickemexit.mp3")
 chingSound = audio.loadStream("ching.mp3")
 dinkSound = audio.loadStream("dink.mp3")
 Runtime:addEventListener("touch", touchEventListener)
-Runtime:addEventListener("axis", onAxisEvent)
 Runtime:addEventListener("mouse", onMouseEvent)
-Runtime:addEventListener( "key", onKeyEvent )
 
 loggerLabel = display.newText("log:"..logger.getFilename(), 0,0, nil, 24);
 loggerLabel.anchorX = 1
