@@ -44,12 +44,12 @@ TOUCH_SCHEME = 2
 
 activeScheme = SWIPE_SCHEME
 
-chooseRandomControl = true
+chooseRandomControls = true
 swiping = false
 swipeTimer = nil
 swipeThreshold = 50
 
-if (chooseRandomController == true) then
+if (chooseRandomControls == true) then
 	controller1 = math.random(1,3)
 	controller2 = math.random(1,3)
 	controller3 = math.random(1,3)
@@ -225,8 +225,12 @@ function adjustTruckBounds()
 	end
 end
 -----------------------------------------------------------------
+function initControls()
+	--todo implement control assignment algorithm
+	-- possibly something like s1 s2 s3 t1 t2 t3 in an array?
+end
 function restartGame()
-	if (chooseRandomControl == true) then
+	if (chooseRandomControls == true) then
 		controller1 = math.random(1,3)
 		controller2 = math.random(1,3)
 		controller3 = math.random(1,3)
@@ -236,7 +240,7 @@ function restartGame()
 		while ((controller3 == controller2) or (controller3 == controller1)) do
 			controller3 = math.random(1,3)
 		end
-		activeScheme = controller1
+		activeController = controller1
 	end
 	level = 0
 	points = 0
@@ -360,7 +364,6 @@ function initNextLevel()
 	end
 	state = WAITING_FOR_NEXT_LEVEL
 end
-
 -----------------------------------------------------------------
 function startNextLevel()
 	speed = 4.5
@@ -427,10 +430,7 @@ end
 -----------------------------------------------------------------
 
 function bagTouch(self,event)
-
-
 	if ((event.phase == "began" or event.keyName == "buttonA") and state ~= PICKEM_DELAY ) then
-	
 		if (self.selectable == true) then
 			self.selectable = false
 			local dinkSoundChannel = audio.play(dinkSound);
@@ -554,12 +554,11 @@ function updateMeters()
 		pointLabel = nil
 	end
 	pointLabel = display.newText("Points: "..points, 0,0, nil, 24);
-	pointLabel.anchorX = 1
-	pointLabel.anchorY = 1
-	pointLabel.x = 320;
-	pointLabel.y = 40;
-
-
+	pointLabel.anchorX = 0
+	pointLabel.anchorY = 0
+	pointLabel.x = 500;
+	pointLabel.y = 100;
+	
 	if (state == PLAYING) then
 		timeLeft = roundTime - math.round((system.getTimer()-startRoundTime)/1000)
 	end
@@ -568,27 +567,6 @@ function updateMeters()
 	if (timeLeft == 0 and state ~=PICKEM_DELAY and state ~= GAME_OVER) then
 		roundOver()
 	end
-end
------------------------------------------------------------------
-function initMeters()
-	pointLabel = display.newText("Points: "..points, 0,0, nil, 24);
-	pointLabel.anchorX = 1
-	pointLabel.anchorY = 1
-	pointLabel.x = 320;
-	pointLabel.y = 40;
-
-	timeLabel = display.newText("Time: "..points, 0,0, nil, 24);
-	timeLabel.anchorX = 1
-	timeLabel.anchorY = 1
-	timeLabel.x = 20;
-	timeLabel.y = 40;
-
-	levelLabel = display.newText("Level: "..level, 0,0, nil, 18);
-	levelLabel.anchorX = 1
-	levelLabel.anchorY = 1
-	levelLabel.x = 480;
-	levelLabel.y = truckY+50;
-
 end
 -----------------------------------------------------------------
 function initGraphics()
@@ -603,7 +581,52 @@ function initGraphics()
 	truck.x = centerLine
 	truck.y = truckY
 	truck.name = "truck"
-	initMeters()
+	initLabels()
+end
+
+
+function initLabels()
+	pointLabel = display.newText("Points: "..points, 0,0, nil, 24);
+	pointLabel.anchorX = 0
+	pointLabel.anchorY = 0
+	pointLabel.x = 500;
+	pointLabel.y = 100;
+	
+	timeLabel = display.newText("Time: "..points, 0,0, nil, 24);
+	timeLabel.anchorX = 0
+	timeLabel.anchorY = 0
+	timeLabel.x = 500;
+	timeLabel.y = 140;
+	
+	controller = ""
+	if (activeController==1) then controller = "Ouya" end
+	if (activeController==2) then controller = "DS4 with Ouya sensitivity" end
+	if (activeController==3) then controller = "DS4 with normal sensitivity" end
+	
+	controlLabel = display.newText("Controller: "..controller, 0, 0, nil, 24)
+	controlLabel.anchorX = 0
+	controlLabel.anchorY = 0
+	controlLabel.x = 500
+	controlLabel.y = 300
+	
+	scheme = ""
+	if (activeScheme==1) then scheme = "Swipe" end
+	if (activeScheme==2) then scheme = "Touch" end
+	
+	schemeLabel = display.newText("Scheme: "..scheme, 0, 0, nil, 24)
+	schemeLabel.anchorX = 0
+	schemeLabel.anchorY = 0
+	schemeLabel.x = 500
+	schemeLabel.y = 340
+	
+	logLabel = display.newText("Log: "..logger.getFilename(), 0, 0, nil, 24)
+	logLabel.anchorX = 0
+	logLabel.anchorY = 0
+	logLabel.x = 500
+	logLabel.y = 380
+	
+	--scheme
+	--log
 end
 
 -----------------------------------------------------------------
@@ -858,11 +881,6 @@ dinkSound = audio.loadStream("dink.mp3")
 Runtime:addEventListener("touch", touchEventListener)
 Runtime:addEventListener("mouse", onMouseEvent)
 
-loggerLabel = display.newText("log:"..logger.getFilename(), 0,0, nil, 24);
-loggerLabel.anchorX = 1
-loggerLabel.anchorY = 1
-loggerLabel.x = 900;
-loggerLabel.y = 300;
 displayInstructions()
 
 restoreState()
