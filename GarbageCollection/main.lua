@@ -50,16 +50,25 @@ swipeTimer = nil
 swipeThreshold = 50
 
 if (chooseRandomControls == true) then
-	controller1 = math.random(1,3)
-	controller2 = math.random(1,3)
-	controller3 = math.random(1,3)
-	while (controller2 == controller1) do
-		controller2 = math.random(1,3)
+	controlCombos = "s1s2s3t1t2t3"
+	i = 6
+	controlOrder = ""
+	--while (string.len(controlCombos)>0) do
+	while (i>0) do
+		print("Control combos: "..controlCombos)
+		numCombosLeft = string.len(controlCombos) / 2
+		print(numCombosLeft)
+		nextScheme = math.random(0, numCombosLeft-1)
+		nextScheme = nextScheme * 2
+		print(nextScheme)
+		controlOrder = controlOrder..controlCombos:sub(nextScheme, nextScheme + 1)
+		print("Control order: "..controlOrder)
+		print(string.sub(controlCombos, 0, nextScheme))
+		print(string.sub(controlCombos, nextScheme + 1))
+		controlCombos = string.sub(controlCombos, 0, nextScheme)..string.sub(controlCombos, nextScheme + 1)
+		print(controlCombos)
+		i = i - 1
 	end
-	while ((controller3 == controller2) or (controller3 == controller1)) do
-		controller3 = math.random(1,3)
-	end
-	activeController = controller1
 end
 
 currentPoints = 0
